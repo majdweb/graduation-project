@@ -1,0 +1,131 @@
+:root {
+  --primary: #2A3D66;
+  --accent: #E8B86D;
+  --background: #F5F6FA;
+  --surface: #FFFFFF;
+}
+
+/* PAGE */
+.reservation-page {
+  padding: 40px;
+  background: var(--background);
+  min-height: 100vh;
+  font-family: system-ui;
+}
+
+/* BACK BUTTON */
+.back-btn {
+  padding: 8px 16px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* TITLES */
+.title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin: 30px 0;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 14px;
+}
+
+/* CARDS */
+.section-card {
+  background: var(--surface);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  margin-bottom: 30px;
+}
+
+/* ROOM DETAILS */
+.room-details {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.room-img {
+  width: 160px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.hotel {
+  color: #555;
+}
+
+.city {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.price {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.stars {
+  color: var(--accent);
+}
+
+/* INPUTS */
+.section-card input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+/* PAYMENT */
+.payment-methods {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.method {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--primary);
+  background: white;
+  cursor: pointer;
+}
+
+.method.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* CONFIRM BUTTON */
+.confirm-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent);
+  color: var(--primary);
+  border: none;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.confirm-btn:hover {
+  background: var(--primary);
+  color: white;
+}

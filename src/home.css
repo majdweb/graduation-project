@@ -176,6 +176,7 @@
 .hero-text h1 {
   font-size: clamp(2rem, 4vw, 3rem);
   margin: 0 0 10px;
+    color:white !important
 }
 
 .hero-text p {

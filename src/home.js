@@ -1,5 +1,7 @@
 import './home.css';
 import heroImage from './assets/homepage_slider.webp';
+import { Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 export default function Home() {
     /* use effect to transparent */
@@ -75,12 +77,10 @@ useEffect(() => {
 
 
       const navLinks = [
-    { label: 'Home', href: '#home' },
-    { label: 'Services', href: '#services' },
-    { label: 'Rooms', href: '#rooms' },
-    { label: 'Reservation', href: '#reservation' },
-    { label: 'About Us', href: '#about' },
-    { label: 'Contact', href: '#contact' },
+    { label: 'Home', href: '/' },
+    { label: 'Services', href: '/servicessection' },
+    { label: 'Rooms', href: '/rooms' },
+    { label: 'About Us', href: '/about' }
 
   ];
   return (
@@ -90,13 +90,13 @@ useEffect(() => {
         <ul className="nav-links">
           {navLinks.map(link => (
             <li key={link.href}>
-              <a href={link.href}>{link.label}</a>
+                 <Link to={link.href}>{link.label}</Link>
             </li>
           ))}
         </ul>
         <div className="auth-buttons">
-          <a className="btn login" href="/login.html">Login</a>
-          <a className="btn signup" href="/signup.html">Sign Up</a>
+          <a className="btn login" href="/login">Login</a>
+          <a className="btn signup" href="/signup">Sign Up</a>
         </div>
       </nav>
 
