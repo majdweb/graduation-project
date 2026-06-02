@@ -1,0 +1,165 @@
+{
+  "rooms": [
+    {
+      "id": 1,
+      "hotelId": "1",
+      "name": "standard room",
+      "amount": 10,
+      "capacity": 3,
+      "price": 100,
+      "variants": [
+        {
+          "name": "",
+          "priceDelta": 0,
+          "capacity": 1
+        }
+      ],
+      "photos": [
+        "http://localhost:5001/public/1778069788135_0_s0ems6"
+      ],
+      "status": "draft",
+      "bookable": true,
+      "stars": 3
+    },
+    {
+      "id": 2,
+      "hotelId": "mansourian",
+      "name": "standard",
+      "amount": 10,
+      "capacity": 2,
+      "price": 100,
+      "variants": [
+        {
+          "name": "sea view",
+          "priceDelta": 3,
+          "capacity": 50
+        },
+        {
+          "name": "sea window",
+          "priceDelta": 2,
+          "capacity": 25
+        }
+      ],
+      "photos": [
+        "http://localhost:5001/public/1778093532992_0_74klgq"
+      ],
+      "status": "draft",
+      "bookable": true,
+      "stars": 3
+    },
+    {
+      "id": 3,
+      "hotelId": "sheraton",
+      "name": "standard room",
+      "amount": 10,
+      "capacity": 2,
+      "price": 100,
+      "variants": [],
+      "photos": [
+        "http://localhost:5001/public/1778263374514_0_52v8v2"
+      ],
+      "status": "draft",
+      "bookable": true,
+      "stars": 3
+    }
+  ],
+  "nextRoomId": 4,
+  "users": [
+    {
+      "id": 1,
+      "username": "mohammad",
+      "email": "2001mohammad.mansour@gmail.com",
+      "role": "hotel_owner",
+      "hotelName": "sheraton",
+      "city": "aleppo",
+      "password": "Aaaaaaaaa.",
+      "createdAt": "2026-05-06T11:58:54.223Z",
+      "address": "city center",
+      "phoneNumber": "0933145916",
+      "description": "best hotel in aleppo",
+      "photos": [
+        "http://localhost:5001/public/1778263332404_0_6rx2q7"
+      ]
+    },
+    {
+      "id": 2,
+      "username": "gizmo",
+      "email": "20001mohammad.mansour@gmail.com",
+      "role": "guest",
+      "hotelId": null,
+      "hotelName": null,
+      "city": null,
+      "address": null,
+      "phoneNumber": "33605924",
+      "description": null,
+      "photos": [],
+      "password": "Aaaaaaaaa.",
+      "createdAt": "2026-05-08T18:07:45.147Z"
+    },
+    {
+      "id": 3,
+      "username": "majd",
+      "email": "2004majd232@gmail.com",
+      "role": "guest",
+      "hotelId": null,
+      "hotelName": null,
+      "city": null,
+      "address": null,
+      "phoneNumber": "+963994444444",
+      "description": null,
+      "photos": [],
+      "password": "12345Aa!",
+      "createdAt": "2026-05-15T15:29:30.393Z"
+    },
+    {
+      "id": 4,
+      "username": "majd",
+      "email": "majdweb7@gmail.com",
+      "role": "hotel_owner",
+      "hotelId": "dortburg",
+      "hotelName": "dortburg",
+      "city": "dortmund",
+      "address": null,
+      "phoneNumber": "+9635999999999",
+      "description": null,
+      "photos": [],
+      "password": "12345Aa!",
+      "createdAt": "2026-05-15T15:31:05.234Z"
+    }
+  ],
+  "nextUserId": 5,
+  "reservations": [
+    {
+      "id": 1,
+      "hotelId": "1",
+      "roomId": 1,
+      "guestName": "Ava Johnson",
+      "checkIn": "2026-05-08",
+      "checkOut": "2026-05-11",
+      "status": "confirmed"
+    },
+    {
+      "id": 2,
+      "hotelId": "1",
+      "roomId": 2,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-05-13",
+      "checkOut": "2026-05-16",
+      "status": "confirmed"
+    },
+    {
+      "id": 3,
+      "hotelId": "1",
+      "roomId": 1,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-05-21",
+      "checkOut": "2026-05-24",
+      "status": "cancelled"
+    }
+  ],
+  "hotelSettings": {
+    "1": {
+      "autoAcceptBookings": true
+    }
+  }
+}

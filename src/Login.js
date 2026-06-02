@@ -11,13 +11,38 @@ const navigate = useNavigate();
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => setLoading(false), 2000);
+    try {
+      const { signInUser } = await import("./services/auth");
+      const res = await signInUser({ email: form.email.trim(), password: form.password });
+      // store token/user for testing
+      try {
+        const existingRaw = localStorage.getItem('mock_auth_user');
+        const existing = existingRaw ? JSON.parse(existingRaw) : {};
+        const next = {
+          ...res,
+          user: {
+            ...(existing?.user || {}),
+            ...(res?.user || {}),
+            hotelId: res?.user?.hotelId || existing?.user?.hotelId || null,
+            hotelName: res?.user?.hotelName || existing?.user?.hotelName || null,
+          },
+        };
+        localStorage.setItem('mock_auth_user', JSON.stringify(next));
+      } catch (e) {}
+      if (res?.user?.role === 'hotel_owner') {
+        navigate('/ownerhome');
+      } else {
+        navigate('/');
+      }
+    } catch (err) {
+      alert('Login failed: ' + (err.message || err));
+    } finally {
+      setLoading(false);
+    }
   };
-navigate("/home");
   return (
     <div className="login-page">
       <div className="login-left">
