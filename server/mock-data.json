@@ -110,6 +110,21 @@
       "photos": [],
       "password": "12345Aa!",
       "createdAt": "2026-05-15T15:29:30.393Z"
+    },
+    {
+      "id": 4,
+      "username": "majd",
+      "email": "majdweb7@gmail.com",
+      "role": "hotel_owner",
+      "hotelId": "dortburg",
+      "hotelName": "dortburg",
+      "city": "dortmund",
+      "address": null,
+      "phoneNumber": "+9635999999999",
+      "description": null,
+      "photos": [],
+      "password": "12345Aa!",
+      "createdAt": "2026-05-15T15:31:05.234Z"
     }
   ],
   "nextUserId": 5,
