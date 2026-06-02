@@ -79,6 +79,7 @@ useEffect(() => {
       const navLinks = [
     { label: 'Home', href: '/' },
     { label: 'Services', href: '/services' },
+    { label: 'Hotels', href: '/hotels' },
     { label: 'Rooms', href: '/rooms' },
     { label: 'About Us', href: '/about' }
 

@@ -90,6 +90,7 @@ export default function OwnerHome() {
 
   const navLinks = [
     { label: 'Services', href: '/services' },
+    { label: 'Hotels', href: '/hotels' },
     { label: 'Rooms', href: '/rooms' },
     { label: 'About Us', href: '/about' },
     { label: 'Owner Dashboard', href: '/owner/dashboard' }

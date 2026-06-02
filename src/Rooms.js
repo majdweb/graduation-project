@@ -75,6 +75,23 @@ export default function Rooms() {
 
   const location = useLocation()
   const navigate = useNavigate()
+  const isOwner = (() => {
+    try {
+      const raw = localStorage.getItem('mock_auth_user')
+      const parsed = raw ? JSON.parse(raw) : null
+      return (parsed?.user?.role || localStorage.getItem('mock_auth_role')) === 'hotel_owner'
+    } catch (error) {
+      return localStorage.getItem('mock_auth_role') === 'hotel_owner'
+    }
+  })()
+  const handleBack = () => {
+    const fallback = isOwner ? '/ownerhome' : '/'
+    if (window.history.length > 1) {
+      navigate(-1)
+    } else {
+      navigate(fallback, { replace: true })
+    }
+  }
   const incoming = location.state || {}
   const selectedHotel = incoming.selectedHotel || ''
 
@@ -115,8 +132,9 @@ export default function Rooms() {
     <
     div className = "back-wrapper" >
     <
-    Link to = "/"
-    className = "back-btn" > ←Back < /Link> <
+    button type = "button"
+    className = "back-btn"
+    onClick = { handleBack } > ←Back < /button> <
     /div>
 
     <

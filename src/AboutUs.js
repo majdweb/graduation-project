@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import './about.css'
 
 const team = [
@@ -42,10 +42,28 @@ const team = [
 ]
 
 export default function AboutUs() {
+    const navigate = useNavigate()
+    const isOwner = (() => {
+        try {
+            const raw = localStorage.getItem('mock_auth_user')
+            const parsed = raw ? JSON.parse(raw) : null
+            return (parsed?.user?.role || localStorage.getItem('mock_auth_role')) === 'hotel_owner'
+        } catch (error) {
+            return localStorage.getItem('mock_auth_role') === 'hotel_owner'
+        }
+    })()
+    const handleBack = () => {
+        const fallback = isOwner ? '/ownerhome' : '/'
+        if (window.history.length > 1) {
+            navigate(-1)
+        } else {
+            navigate(fallback, { replace: true })
+        }
+    }
     return (
         <section className="about-section">
             <div className="about-header">
-                <Link to="/home" className="back-link">← Back to Home</Link>
+                <button type="button" className="back-link" onClick={handleBack}>← Back</button>
                 <div className="page-heading">
                     <h2 className="about-title">About Us</h2>
                     <p className="about-subtitle">Six team members who built this project together.</p>

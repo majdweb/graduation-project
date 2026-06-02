@@ -170,6 +170,36 @@ function buildOwnerProfilePayload(owner) {
   };
 }
 
+function normalizeHotelKey(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function buildHotelSummary(owner, allRooms) {
+  const hotelKey = normalizeHotelKey(owner.hotelId || owner.hotelName || owner.id);
+  const hotelRooms = allRooms.filter((room) => {
+    const roomKey = normalizeHotelKey(room.hotelId || room.hotelName);
+    return roomKey && roomKey === hotelKey;
+  });
+  const prices = hotelRooms.map((room) => Number(room.price)).filter((price) => Number.isFinite(price));
+  const stars = hotelRooms.map((room) => Number(room.stars)).filter((value) => Number.isFinite(value));
+  const photos = normalizePhotoUrls(owner.photos);
+  return {
+    id: owner.id,
+    hotelId: owner.hotelId || null,
+    hotelName: owner.hotelName || "",
+    city: owner.city || "",
+    address: owner.address || "",
+    phoneNumber: owner.phoneNumber || "",
+    description: owner.description || "",
+    minPrice: prices.length ? Math.min(...prices) : null,
+    maxPrice: prices.length ? Math.max(...prices) : null,
+    rating: stars.length ? Math.round(stars.reduce((sum, value) => sum + value, 0) / stars.length) : null,
+    roomsCount: hotelRooms.length,
+    photos,
+    cardPhoto: photos.length ? photos[0] : null,
+  };
+}
+
 
 // returns signed upload info (mock)
 app.post('/api/uploads/signed-urls', (req, res) => {
@@ -271,6 +301,13 @@ app.post('/api/auth/login', (req, res) => {
   if (!user) return res.status(401).json({ message: 'Invalid credentials' });
   const token = `mock-token-${user.id}-${Date.now()}`;
   res.json({ user: buildAuthUserPayload(user), token });
+});
+
+app.get('/api/hotels', (req, res) => {
+  const list = users
+    .filter((u) => u.role === 'hotel_owner' && (u.hotelName || u.hotelId))
+    .map((u) => buildHotelSummary(u, rooms));
+  res.json(list);
 });
 
 
