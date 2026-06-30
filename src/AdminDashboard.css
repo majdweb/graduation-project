@@ -825,3 +825,66 @@
   .ha-detail-grid { grid-template-columns: 1fr; }
   .ha-bar-row { grid-template-columns: 110px 1fr; }
 }
+
+/* ===== HOTEL REQUESTS (admin) ===== */
+.hrq-root { display: flex; flex-direction: column; gap: 20px; }
+.hrq-list { display: flex; flex-direction: column; gap: 14px; }
+.hrq-empty { color: var(--adm-text-light); font-size: 14px; margin: 6px 0 0; }
+
+.hrq-card {
+  border: 1px solid var(--adm-border); border-radius: 12px;
+  padding: 16px; background: var(--adm-surface);
+}
+.hrq-card-history { background: var(--adm-surface2); }
+.hrq-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.hrq-type { font-weight: 700; font-size: 14px; color: var(--adm-text); }
+.hrq-meta { font-size: 13px; color: var(--adm-text-light); }
+.hrq-date { margin-top: 2px; font-size: 12px; }
+
+.hrq-badge {
+  font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+}
+.hrq-badge-pending  { background: #FFF3DC; color: #B8762F; }
+.hrq-badge-approved { background: #E3F6EC; color: #2E9E6B; }
+.hrq-badge-rejected { background: #FBE6E6; color: #C0392B; }
+
+.hrq-body { display: flex; gap: 18px; margin-top: 12px; flex-wrap: wrap; }
+.hrq-changes { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 6px; }
+.hrq-change-line { display: flex; gap: 8px; font-size: 13px; }
+.hrq-change-label {
+  min-width: 90px; color: var(--adm-text-light); font-weight: 600; font-size: 12px;
+}
+.hrq-change-value { color: var(--adm-text); }
+.hrq-doc { flex-shrink: 0; }
+.hrq-doc-label { font-size: 12px; color: var(--adm-text-light); margin-bottom: 6px; }
+.hrq-doc-img {
+  width: 160px; height: 110px; object-fit: cover; border-radius: 8px;
+  border: 1px solid var(--adm-border); cursor: zoom-in;
+}
+
+.hrq-reason {
+  margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+  background: #FBE6E6; color: #8B2B22; font-size: 13px;
+}
+.hrq-reviewed { margin-top: 10px; font-size: 12px; color: #2E9E6B; }
+
+.hrq-actions { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.hrq-btn {
+  border: none; padding: 9px 16px; border-radius: 8px; font-size: 13px;
+  font-weight: 700; cursor: pointer; transition: opacity 0.15s;
+}
+.hrq-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.hrq-btn-approve { background: #2E9E6B; color: #fff; }
+.hrq-btn-reject  { background: #C0392B; color: #fff; }
+.hrq-btn-cancel  { background: var(--adm-surface2); color: var(--adm-text); border: 1px solid var(--adm-border); }
+.hrq-reject-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; width: 100%; }
+.hrq-reason-input {
+  flex: 1; min-width: 220px; padding: 9px 12px; border: 1px solid var(--adm-border);
+  border-radius: 8px; font-size: 13px; color: var(--adm-text);
+}
+
+.hrq-lightbox {
+  position: fixed; inset: 0; background: rgba(15,23,42,0.85); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; cursor: zoom-out; padding: 30px;
+}
+.hrq-lightbox img { max-width: 92%; max-height: 92%; border-radius: 10px; }

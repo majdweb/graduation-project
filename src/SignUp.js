@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import "./signUp.css";
 import { signUpUser, verifySignUpCode } from "./services/auth";
+import { addRequest } from "./data/hotelRequests";
+import { fileToResizedDataUrl } from "./data/imageUtil";
 
 const initialForm = {
   username: "",
@@ -20,6 +22,7 @@ const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
 function SignUp() {
   const [form, setForm] = useState(initialForm);
+  const [doc, setDoc] = useState(null); // { name, dataUrl } — hotel document image
   const [isOwnerSignUp, setIsOwnerSignUp] = useState(false);
   const [currentPage, setCurrentPage] = useState("signup");
   const [verificationEmail, setVerificationEmail] = useState("");
@@ -87,9 +90,28 @@ function SignUp() {
     }));
   };
 
+  const handleDocChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, document: "Document image is too large (max 8MB)." }));
+      e.target.value = "";
+      return;
+    }
+    try {
+      const dataUrl = await fileToResizedDataUrl(file);
+      setDoc({ name: file.name, dataUrl });
+      setErrors((prev) => ({ ...prev, document: undefined }));
+    } catch {
+      setErrors((prev) => ({ ...prev, document: "Could not read the image. Try another file." }));
+    }
+    e.target.value = "";
+  };
+
   const handleSignUpModeToggle = () => {
     setIsOwnerSignUp((prev) => !prev);
     setForm(initialForm);
+    setDoc(null);
     setErrors({});
     setSubmitError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -98,6 +120,7 @@ function SignUp() {
   const handleBackToSignUp = () => {
     setCurrentPage("signup");
     setForm(initialForm);
+    setDoc(null);
     setErrors({});
     setSubmitError("");
     setVerificationNotice("");
@@ -110,6 +133,9 @@ function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const nextErrors = validate(form);
+    if (isOwnerSignUp && !doc) {
+      nextErrors.document = "Please attach a document image (license / ownership proof).";
+    }
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) return;
@@ -128,6 +154,27 @@ function SignUp() {
     if (isOwnerSignUp) {
       payload.hotelName = form.hotelName.trim();
       payload.city = form.city.trim();
+
+      // Register a "new hotel" request for the admin to approve/reject.
+      // This is stored client-side (JSON in localStorage), independent of the backend.
+      try {
+        addRequest({
+          type: "create",
+          hotelId: "",
+          ownerName: payload.username,
+          ownerEmail: payload.email,
+          changes: {
+            hotelName: payload.hotelName,
+            city: payload.city,
+            phoneNumber: payload.phoneNumber,
+          },
+          document: doc,
+        });
+      } catch (err) {
+        setSubmitError(err.message || "Could not submit the hotel request.");
+        setLoading(false);
+        return;
+      }
     }
 
     try {
@@ -139,6 +186,7 @@ function SignUp() {
       setVerificationSuccess("");
       setCurrentPage("verification");
       setForm(initialForm);
+      setDoc(null);
       setErrors({});
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -308,6 +356,18 @@ function SignUp() {
                   autoComplete="address-level2"
                 />
                 {errors.city && <span className="error">{errors.city}</span>}
+              </label>
+
+              <label>
+                Document image (license / ownership proof)
+                <input type="file" accept="image/*" onChange={handleDocChange} />
+                {doc && (
+                  <span className="signup-doc-preview">
+                    <img src={doc.dataUrl} alt="Document" />
+                    <span className="signup-doc-name">{doc.name}</span>
+                  </span>
+                )}
+                {errors.document && <span className="error">{errors.document}</span>}
               </label>
             </>
           )}

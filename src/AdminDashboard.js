@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { DEFAULT_CONTENT, STORAGE_KEY } from './useSiteContent';
 import HotelsAnalytics from './HotelsAnalytics';
+import HotelRequests from './HotelRequests';
 import './AdminDashboard.css';
 
 const ADMIN_PASSWORD = 'velvet2026';
@@ -561,6 +562,7 @@ export default function AdminDashboard() {
   const NAV_ITEMS = [
     { key: 'overview',      icon: '📊', label: 'Overview' },
     { key: 'hotels',        icon: '🏨', label: 'Hotels Analytics' },
+    { key: 'requests',      icon: '📥', label: 'Hotel Requests' },
     { key: 'hero',          icon: '🌟', label: 'Hero Section' },
     { key: 'services',      icon: '🛎', label: 'Services' },
     { key: 'testimonials',  icon: '💬', label: 'Testimonials' },
@@ -572,6 +574,7 @@ export default function AdminDashboard() {
   const SECTION_DESCRIPTIONS = {
     overview:     'Site overview and quick navigation',
     hotels:       'Bookings, monthly trends, and hotel vs platform profit across all hotels',
+    requests:     'Approve or reject hotel owner requests to create or edit a hotel',
     hero:         'Edit the hero banner — brand name, tagline, and CTA buttons',
     services:     'Edit the 4 service cards shown on the homepage',
     testimonials: 'Manage customer reviews and ratings',
@@ -620,7 +623,7 @@ export default function AdminDashboard() {
         {/* Main */}
         <main className="admin-main">
           {/* Toolbar */}
-          {activeTab !== 'hotels' && (
+          {activeTab !== 'hotels' && activeTab !== 'requests' && (
           <div className="admin-toolbar">
             <button className="admin-toolbar-btn admin-btn-save" onClick={handleSave}>
               💾 Save Changes
@@ -659,6 +662,9 @@ export default function AdminDashboard() {
           )}
           {activeTab === 'hotels' && (
             <HotelsAnalytics />
+          )}
+          {activeTab === 'requests' && (
+            <HotelRequests />
           )}
           {activeTab === 'hero' && (
             <HeroEditor data={content.hero} onChange={handleFieldChange} />

@@ -128,6 +128,7 @@ export default function OwnerHome() {
               <p className="owner-profile-line">{ownerProfile.hotelName}</p>
               <Link to="/owner/dashboard" className="owner-profile-dashboard-link">Dashboard</Link>
               <Link to="/owner/hotel-info" className="owner-profile-dashboard-link">Edit Hotel Info</Link>
+              <Link to="/owner/requests" className="owner-profile-dashboard-link">Hotel Requests</Link>
               <button type="button" className="owner-profile-signout-btn" onClick={handleSignOut}>Sign Out</button>
             </div>
           </div>

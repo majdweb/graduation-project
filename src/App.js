@@ -11,6 +11,7 @@ import OwnerDashboard from "./OwnerDashboard";
 import OwnerHome from "./OwnerHome";
 import OwnerStats from "./OwnerStats";
 import OwnerHotelInfo from "./OwnerHotelInfo";
+import OwnerRequests from "./OwnerRequests";
 import AboutUs from "./AboutUs"
 import AdminDashboard from "./AdminDashboard";
 
@@ -42,6 +43,7 @@ export default function App() {
     '/owner/dashboard',
     '/owner/stats',
     '/owner/hotel-info',
+    '/owner/requests',
     '/admin',
   ];
   const showGlobalBrand = !hideGlobalBrandOn.includes(location.pathname);
@@ -66,6 +68,7 @@ export default function App() {
         <Route path="/owner/dashboard" element={<OwnerRoute><OwnerDashboard/></OwnerRoute>} />
         <Route path="/owner/stats" element={<OwnerRoute><OwnerStats /></OwnerRoute>} />
         <Route path="/owner/hotel-info" element={<OwnerRoute><OwnerHotelInfo /></OwnerRoute>} />
+        <Route path="/owner/requests" element={<OwnerRequests />} />
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </>

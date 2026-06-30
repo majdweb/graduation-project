@@ -92,6 +92,9 @@ export default function Login() {
           <button type="button" className="link-button" onClick={() => navigate("/signup")}>
             Create an account
           </button>
+          <button type="button" className="link-button" onClick={() => navigate("/owner/requests")}>
+            Submit / track a hotel request
+          </button>
         </form>
       </main>
     </div>

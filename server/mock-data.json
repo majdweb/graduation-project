@@ -131,9 +131,54 @@
       "photos": [],
       "password": "12345Aa!",
       "createdAt": "2026-05-15T15:31:05.234Z"
+    },
+    {
+      "id": 5,
+      "username": "besher",
+      "email": "bishrtahhan1@gmail.com",
+      "role": "hotel_owner",
+      "hotelId": "myHotel",
+      "hotelName": "myHotel",
+      "city": "Aleppo",
+      "address": null,
+      "phoneNumber": "+963941423410",
+      "description": null,
+      "photos": [],
+      "password": "Aa123456.",
+      "createdAt": "2026-06-30T10:02:56.924Z"
+    },
+    {
+      "id": 6,
+      "username": "besh",
+      "email": "bishrtahhan3@gmail.com",
+      "role": "hotel_owner",
+      "hotelId": "niggers",
+      "hotelName": "niggers",
+      "city": "nigo",
+      "address": null,
+      "phoneNumber": "0944444444",
+      "description": null,
+      "photos": [],
+      "password": "Ss123456.",
+      "createdAt": "2026-06-30T10:35:21.728Z"
+    },
+    {
+      "id": 7,
+      "username": "nigga",
+      "email": "nigga@gmail.com",
+      "role": "hotel_owner",
+      "hotelId": "niggershub",
+      "hotelName": "niggershub",
+      "city": "nigaco",
+      "address": null,
+      "phoneNumber": "0912345678",
+      "description": null,
+      "photos": [],
+      "password": "Nn123456.",
+      "createdAt": "2026-06-30T10:46:51.055Z"
     }
   ],
-  "nextUserId": 5,
+  "nextUserId": 8,
   "reservations": [
     {
       "id": 1,

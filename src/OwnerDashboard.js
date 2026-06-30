@@ -458,11 +458,18 @@ export default function OwnerDashboard() {
   return (
     <div className="owner-dashboard">
       <header className="od-header">
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <Link to="/ownerhome" className="cta" style={{ textDecoration: "none", display: "inline-block" }}>
             Back
           </Link>
           <h1 style={{ margin: 0 }}>Owner Dashboard</h1>
+          <Link
+            to="/owner/requests"
+            className="cta"
+            style={{ textDecoration: "none", display: "inline-block", marginLeft: "auto" }}
+          >
+            📨 Hotel Requests
+          </Link>
         </div>
         <p className="muted">Overview of your hotel's performance and settings</p>
       </header>
