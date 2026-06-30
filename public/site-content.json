@@ -1,0 +1,40 @@
+{
+  "hero": {
+    "brand": "Velvet Compass",
+    "tagline": "Your trusted hotel booking platform connecting guests directly with hotel owners for the best deals and experiences.",
+    "cta1": "Explore Hotels",
+    "cta2": "Learn More"
+  },
+  "services": {
+    "sectionTitle": "Our Premium Services",
+    "cards": [
+      { "id": 1, "icon": "🧭", "title": "Smart Booking", "description": "Direct prices, real‑time availability, and a seamless booking experience." },
+      { "id": 2, "icon": "🏨", "title": "Hotel Owner Tools", "description": "Manage rooms, bookings, and pricing with a powerful dashboard." },
+      { "id": 3, "icon": "⚡", "title": "Instant Confirmation", "description": "Immediate confirmation for guests and instant notifications for owners." },
+      { "id": 4, "icon": "🔒", "title": "Secure Payments", "description": "Encrypted transactions with industry‑grade security." }
+    ]
+  },
+  "testimonials": {
+    "sectionTitle": "What Our Users Say",
+    "reviews": [
+      { "id": 1, "name": "Lina Mansour", "text": "The booking process was incredibly smooth and the interface feels premium.", "stars": 5, "img": "https://i.pravatar.cc/150?img=11" },
+      { "id": 2, "name": "Hadi Nasser", "text": "I found great hotel deals that I couldn't find anywhere else. Highly recommended!", "stars": 4, "img": "https://i.pravatar.cc/150?img=22" },
+      { "id": 3, "name": "Emily Carter", "text": "Fast, reliable, and beautifully designed. This platform is now my go‑to for hotel reservations.", "stars": 5, "img": "https://i.pravatar.cc/150?img=36" }
+    ]
+  },
+  "about": {
+    "title": "About Us",
+    "paragraph1": "Velvet Compass is a next‑generation hotel booking platform designed to connect travelers directly with hotel owners. Our mission is to deliver a seamless, transparent, and personalized booking experience.",
+    "paragraph2": "Since 2026, we've grown into a trusted name in the hospitality industry, empowering both guests and hotel owners with modern, efficient tools."
+  },
+  "contact": {
+    "heading": "Contact Us",
+    "subtext": "Have questions or need assistance? We're here to help!",
+    "email": "support@velvetcompass.com",
+    "phone": "+1-800-555-0123",
+    "address": "123 Hotel Street, Booking City, BC 12345"
+  },
+  "footer": {
+    "text": "© 2026 Velvet Compass. All rights reserved."
+  }
+}

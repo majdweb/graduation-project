@@ -12,6 +12,8 @@ import OwnerHome from "./OwnerHome";
 import OwnerStats from "./OwnerStats";
 import OwnerHotelInfo from "./OwnerHotelInfo";
 import AboutUs from "./AboutUs"
+import AdminDashboard from "./AdminDashboard";
+
 function OwnerRoute({ children }) {
   let role = null;
   try {
@@ -40,6 +42,7 @@ export default function App() {
     '/owner/dashboard',
     '/owner/stats',
     '/owner/hotel-info',
+    '/admin',
   ];
   const showGlobalBrand = !hideGlobalBrandOn.includes(location.pathname);
 
@@ -63,7 +66,8 @@ export default function App() {
         <Route path="/owner/dashboard" element={<OwnerRoute><OwnerDashboard/></OwnerRoute>} />
         <Route path="/owner/stats" element={<OwnerRoute><OwnerStats /></OwnerRoute>} />
         <Route path="/owner/hotel-info" element={<OwnerRoute><OwnerHotelInfo /></OwnerRoute>} />
-      </Routes>n
+        <Route path="/admin" element={<AdminDashboard />} />
+      </Routes>
     </>
   );
 }

@@ -54,7 +54,13 @@
       "amount": 10,
       "capacity": 2,
       "price": 100,
-      "variants": [],
+      "variants": [
+        {
+          "name": "sea view",
+          "priceDelta": 2,
+          "capacity": 20
+        }
+      ],
       "photos": [
         "http://localhost:5001/public/1778263374514_0_52v8v2"
       ],

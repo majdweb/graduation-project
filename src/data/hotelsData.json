@@ -1,0 +1,1957 @@
+{
+  "generatedAt": "2026-06-30",
+  "platformCutPercent": 15,
+  "hotels": [
+    {
+      "hotelId": "sheraton",
+      "hotelName": "Sheraton Aleppo",
+      "city": "Aleppo",
+      "stars": 5
+    },
+    {
+      "hotelId": "mansourian",
+      "hotelName": "Mansourian Palace",
+      "city": "Damascus",
+      "stars": 4
+    },
+    {
+      "hotelId": "dortburg",
+      "hotelName": "Dortburg Hotel",
+      "city": "Dortmund",
+      "stars": 4
+    },
+    {
+      "hotelId": "velvet",
+      "hotelName": "Velvet Grand",
+      "city": "Beirut",
+      "stars": 5
+    },
+    {
+      "hotelId": "palmyra",
+      "hotelName": "Palmyra Resort",
+      "city": "Homs",
+      "stars": 3
+    }
+  ],
+  "rooms": [
+    {
+      "id": 1,
+      "hotelId": "sheraton",
+      "name": "Standard Room",
+      "amount": 4,
+      "capacity": 4,
+      "price": 100,
+      "stars": 5
+    },
+    {
+      "id": 2,
+      "hotelId": "sheraton",
+      "name": "Deluxe Suite",
+      "amount": 9,
+      "capacity": 4,
+      "price": 220,
+      "stars": 5
+    },
+    {
+      "id": 3,
+      "hotelId": "sheraton",
+      "name": "Sea View Room",
+      "amount": 4,
+      "capacity": 4,
+      "price": 160,
+      "stars": 5
+    },
+    {
+      "id": 4,
+      "hotelId": "sheraton",
+      "name": "Royal Suite",
+      "amount": 12,
+      "capacity": 4,
+      "price": 400,
+      "stars": 5
+    },
+    {
+      "id": 5,
+      "hotelId": "mansourian",
+      "name": "Classic Room",
+      "amount": 12,
+      "capacity": 2,
+      "price": 90,
+      "stars": 4
+    },
+    {
+      "id": 6,
+      "hotelId": "mansourian",
+      "name": "Family Room",
+      "amount": 11,
+      "capacity": 1,
+      "price": 150,
+      "stars": 4
+    },
+    {
+      "id": 7,
+      "hotelId": "mansourian",
+      "name": "Garden Suite",
+      "amount": 11,
+      "capacity": 2,
+      "price": 210,
+      "stars": 4
+    },
+    {
+      "id": 8,
+      "hotelId": "dortburg",
+      "name": "Single Room",
+      "amount": 9,
+      "capacity": 1,
+      "price": 80,
+      "stars": 4
+    },
+    {
+      "id": 9,
+      "hotelId": "dortburg",
+      "name": "Double Room",
+      "amount": 11,
+      "capacity": 2,
+      "price": 130,
+      "stars": 4
+    },
+    {
+      "id": 10,
+      "hotelId": "dortburg",
+      "name": "Business Suite",
+      "amount": 12,
+      "capacity": 4,
+      "price": 260,
+      "stars": 4
+    },
+    {
+      "id": 11,
+      "hotelId": "dortburg",
+      "name": "Penthouse",
+      "amount": 13,
+      "capacity": 3,
+      "price": 350,
+      "stars": 4
+    },
+    {
+      "id": 12,
+      "hotelId": "velvet",
+      "name": "Cozy Room",
+      "amount": 5,
+      "capacity": 1,
+      "price": 120,
+      "stars": 5
+    },
+    {
+      "id": 13,
+      "hotelId": "velvet",
+      "name": "Ocean Suite",
+      "amount": 8,
+      "capacity": 2,
+      "price": 280,
+      "stars": 5
+    },
+    {
+      "id": 14,
+      "hotelId": "velvet",
+      "name": "Presidential",
+      "amount": 13,
+      "capacity": 3,
+      "price": 520,
+      "stars": 5
+    },
+    {
+      "id": 15,
+      "hotelId": "palmyra",
+      "name": "Desert Room",
+      "amount": 11,
+      "capacity": 1,
+      "price": 70,
+      "stars": 3
+    },
+    {
+      "id": 16,
+      "hotelId": "palmyra",
+      "name": "Oasis Room",
+      "amount": 4,
+      "capacity": 4,
+      "price": 110,
+      "stars": 3
+    }
+  ],
+  "reservations": [
+    {
+      "id": 1,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-01-05",
+      "checkOut": "2026-01-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 2,
+      "hotelId": "sheraton",
+      "roomId": 2,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-01-01",
+      "checkOut": "2026-01-06",
+      "status": "confirmed"
+    },
+    {
+      "id": 3,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-01-12",
+      "checkOut": "2026-01-15",
+      "status": "confirmed"
+    },
+    {
+      "id": 4,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-01-25",
+      "checkOut": "2026-01-27",
+      "status": "cancelled"
+    },
+    {
+      "id": 5,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Nina Roth",
+      "checkIn": "2026-01-13",
+      "checkOut": "2026-01-16",
+      "status": "confirmed"
+    },
+    {
+      "id": 6,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-01-07",
+      "checkOut": "2026-01-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 7,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Yara Saad",
+      "checkIn": "2026-01-26",
+      "checkOut": "2026-01-28",
+      "status": "confirmed"
+    },
+    {
+      "id": 8,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-01-12",
+      "checkOut": "2026-01-17",
+      "status": "confirmed"
+    },
+    {
+      "id": 9,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Lucas Garcia",
+      "checkIn": "2026-02-10",
+      "checkOut": "2026-02-13",
+      "status": "confirmed"
+    },
+    {
+      "id": 10,
+      "hotelId": "sheraton",
+      "roomId": 2,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-02-12",
+      "checkOut": "2026-02-17",
+      "status": "confirmed"
+    },
+    {
+      "id": 11,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Omar Khalil",
+      "checkIn": "2026-02-17",
+      "checkOut": "2026-02-19",
+      "status": "confirmed"
+    },
+    {
+      "id": 12,
+      "hotelId": "sheraton",
+      "roomId": 2,
+      "guestName": "Omar Khalil",
+      "checkIn": "2026-02-08",
+      "checkOut": "2026-02-10",
+      "status": "cancelled"
+    },
+    {
+      "id": 13,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-02-03",
+      "checkOut": "2026-02-06",
+      "status": "confirmed"
+    },
+    {
+      "id": 14,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Hugo Mueller",
+      "checkIn": "2026-02-07",
+      "checkOut": "2026-02-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 15,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Lucas Garcia",
+      "checkIn": "2026-03-22",
+      "checkOut": "2026-03-23",
+      "status": "confirmed"
+    },
+    {
+      "id": 16,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-03-02",
+      "checkOut": "2026-03-04",
+      "status": "confirmed"
+    },
+    {
+      "id": 17,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-03-04",
+      "checkOut": "2026-03-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 18,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-03-21",
+      "checkOut": "2026-03-24",
+      "status": "confirmed"
+    },
+    {
+      "id": 19,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-03-13",
+      "checkOut": "2026-03-15",
+      "status": "confirmed"
+    },
+    {
+      "id": 20,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Liam Brown",
+      "checkIn": "2026-04-12",
+      "checkOut": "2026-04-14",
+      "status": "confirmed"
+    },
+    {
+      "id": 21,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-04-21",
+      "checkOut": "2026-04-23",
+      "status": "confirmed"
+    },
+    {
+      "id": 22,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Hugo Mueller",
+      "checkIn": "2026-04-10",
+      "checkOut": "2026-04-13",
+      "status": "confirmed"
+    },
+    {
+      "id": 23,
+      "hotelId": "sheraton",
+      "roomId": 2,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-04-13",
+      "checkOut": "2026-04-17",
+      "status": "confirmed"
+    },
+    {
+      "id": 24,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Omar Khalil",
+      "checkIn": "2026-04-11",
+      "checkOut": "2026-04-14",
+      "status": "confirmed"
+    },
+    {
+      "id": 25,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Yara Saad",
+      "checkIn": "2026-04-12",
+      "checkOut": "2026-04-15",
+      "status": "confirmed"
+    },
+    {
+      "id": 26,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-04-14",
+      "checkOut": "2026-04-15",
+      "status": "cancelled"
+    },
+    {
+      "id": 27,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Omar Khalil",
+      "checkIn": "2026-04-16",
+      "checkOut": "2026-04-19",
+      "status": "confirmed"
+    },
+    {
+      "id": 28,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-04-09",
+      "checkOut": "2026-04-11",
+      "status": "confirmed"
+    },
+    {
+      "id": 29,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-04-17",
+      "checkOut": "2026-04-21",
+      "status": "confirmed"
+    },
+    {
+      "id": 30,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Hugo Mueller",
+      "checkIn": "2026-04-04",
+      "checkOut": "2026-04-07",
+      "status": "confirmed"
+    },
+    {
+      "id": 31,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Lucas Garcia",
+      "checkIn": "2026-05-02",
+      "checkOut": "2026-05-06",
+      "status": "confirmed"
+    },
+    {
+      "id": 32,
+      "hotelId": "sheraton",
+      "roomId": 2,
+      "guestName": "Nina Roth",
+      "checkIn": "2026-05-01",
+      "checkOut": "2026-05-02",
+      "status": "confirmed"
+    },
+    {
+      "id": 33,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Liam Brown",
+      "checkIn": "2026-05-25",
+      "checkOut": "2026-05-30",
+      "status": "confirmed"
+    },
+    {
+      "id": 34,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-05-16",
+      "checkOut": "2026-05-19",
+      "status": "confirmed"
+    },
+    {
+      "id": 35,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Ava Johnson",
+      "checkIn": "2026-05-24",
+      "checkOut": "2026-05-25",
+      "status": "confirmed"
+    },
+    {
+      "id": 36,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-05-02",
+      "checkOut": "2026-05-04",
+      "status": "confirmed"
+    },
+    {
+      "id": 37,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-06-13",
+      "checkOut": "2026-06-17",
+      "status": "confirmed"
+    },
+    {
+      "id": 38,
+      "hotelId": "sheraton",
+      "roomId": 2,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-06-15",
+      "checkOut": "2026-06-17",
+      "status": "cancelled"
+    },
+    {
+      "id": 39,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Ava Johnson",
+      "checkIn": "2026-06-10",
+      "checkOut": "2026-06-11",
+      "status": "confirmed"
+    },
+    {
+      "id": 40,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-06-15",
+      "checkOut": "2026-06-16",
+      "status": "cancelled"
+    },
+    {
+      "id": 41,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-06-24",
+      "checkOut": "2026-06-26",
+      "status": "confirmed"
+    },
+    {
+      "id": 42,
+      "hotelId": "sheraton",
+      "roomId": 2,
+      "guestName": "Hugo Mueller",
+      "checkIn": "2026-06-13",
+      "checkOut": "2026-06-16",
+      "status": "confirmed"
+    },
+    {
+      "id": 43,
+      "hotelId": "sheraton",
+      "roomId": 2,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-06-26",
+      "checkOut": "2026-06-29",
+      "status": "confirmed"
+    },
+    {
+      "id": 44,
+      "hotelId": "sheraton",
+      "roomId": 2,
+      "guestName": "Nina Roth",
+      "checkIn": "2026-06-12",
+      "checkOut": "2026-06-17",
+      "status": "confirmed"
+    },
+    {
+      "id": 45,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-06-08",
+      "checkOut": "2026-06-13",
+      "status": "confirmed"
+    },
+    {
+      "id": 46,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Nina Roth",
+      "checkIn": "2026-06-08",
+      "checkOut": "2026-06-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 47,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Ava Johnson",
+      "checkIn": "2026-06-11",
+      "checkOut": "2026-06-14",
+      "status": "confirmed"
+    },
+    {
+      "id": 48,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-06-25",
+      "checkOut": "2026-06-26",
+      "status": "confirmed"
+    },
+    {
+      "id": 49,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-06-09",
+      "checkOut": "2026-06-13",
+      "status": "confirmed"
+    },
+    {
+      "id": 50,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Hugo Mueller",
+      "checkIn": "2026-06-25",
+      "checkOut": "2026-06-27",
+      "status": "cancelled"
+    },
+    {
+      "id": 51,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-06-13",
+      "checkOut": "2026-06-18",
+      "status": "confirmed"
+    },
+    {
+      "id": 52,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-06-21",
+      "checkOut": "2026-06-25",
+      "status": "confirmed"
+    },
+    {
+      "id": 53,
+      "hotelId": "sheraton",
+      "roomId": 1,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-06-20",
+      "checkOut": "2026-06-22",
+      "status": "confirmed"
+    },
+    {
+      "id": 54,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-01-11",
+      "checkOut": "2026-01-12",
+      "status": "confirmed"
+    },
+    {
+      "id": 55,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-01-06",
+      "checkOut": "2026-01-11",
+      "status": "confirmed"
+    },
+    {
+      "id": 56,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-01-12",
+      "checkOut": "2026-01-14",
+      "status": "cancelled"
+    },
+    {
+      "id": 57,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Nina Roth",
+      "checkIn": "2026-01-05",
+      "checkOut": "2026-01-07",
+      "status": "confirmed"
+    },
+    {
+      "id": 58,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-01-05",
+      "checkOut": "2026-01-08",
+      "status": "confirmed"
+    },
+    {
+      "id": 59,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-01-13",
+      "checkOut": "2026-01-17",
+      "status": "confirmed"
+    },
+    {
+      "id": 60,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-02-20",
+      "checkOut": "2026-02-22",
+      "status": "confirmed"
+    },
+    {
+      "id": 61,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-02-10",
+      "checkOut": "2026-02-13",
+      "status": "confirmed"
+    },
+    {
+      "id": 62,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Lucas Garcia",
+      "checkIn": "2026-02-25",
+      "checkOut": "2026-03-01",
+      "status": "confirmed"
+    },
+    {
+      "id": 63,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-02-03",
+      "checkOut": "2026-02-08",
+      "status": "confirmed"
+    },
+    {
+      "id": 64,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-02-22",
+      "checkOut": "2026-02-24",
+      "status": "confirmed"
+    },
+    {
+      "id": 65,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Yara Saad",
+      "checkIn": "2026-03-01",
+      "checkOut": "2026-03-04",
+      "status": "confirmed"
+    },
+    {
+      "id": 66,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Liam Brown",
+      "checkIn": "2026-03-05",
+      "checkOut": "2026-03-08",
+      "status": "confirmed"
+    },
+    {
+      "id": 67,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-03-14",
+      "checkOut": "2026-03-19",
+      "status": "confirmed"
+    },
+    {
+      "id": 68,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Liam Brown",
+      "checkIn": "2026-03-16",
+      "checkOut": "2026-03-17",
+      "status": "confirmed"
+    },
+    {
+      "id": 69,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-03-20",
+      "checkOut": "2026-03-21",
+      "status": "confirmed"
+    },
+    {
+      "id": 70,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Layla Hassan",
+      "checkIn": "2026-04-19",
+      "checkOut": "2026-04-24",
+      "status": "confirmed"
+    },
+    {
+      "id": 71,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-04-13",
+      "checkOut": "2026-04-16",
+      "status": "cancelled"
+    },
+    {
+      "id": 72,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Emma Davis",
+      "checkIn": "2026-04-08",
+      "checkOut": "2026-04-12",
+      "status": "confirmed"
+    },
+    {
+      "id": 73,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Lucas Garcia",
+      "checkIn": "2026-04-25",
+      "checkOut": "2026-04-28",
+      "status": "confirmed"
+    },
+    {
+      "id": 74,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-04-07",
+      "checkOut": "2026-04-11",
+      "status": "cancelled"
+    },
+    {
+      "id": 75,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-04-10",
+      "checkOut": "2026-04-14",
+      "status": "confirmed"
+    },
+    {
+      "id": 76,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-04-13",
+      "checkOut": "2026-04-17",
+      "status": "confirmed"
+    },
+    {
+      "id": 77,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Hugo Mueller",
+      "checkIn": "2026-04-14",
+      "checkOut": "2026-04-18",
+      "status": "confirmed"
+    },
+    {
+      "id": 78,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-05-17",
+      "checkOut": "2026-05-20",
+      "status": "confirmed"
+    },
+    {
+      "id": 79,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-05-21",
+      "checkOut": "2026-05-25",
+      "status": "confirmed"
+    },
+    {
+      "id": 80,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-05-20",
+      "checkOut": "2026-05-21",
+      "status": "confirmed"
+    },
+    {
+      "id": 81,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-05-05",
+      "checkOut": "2026-05-07",
+      "status": "confirmed"
+    },
+    {
+      "id": 82,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-05-03",
+      "checkOut": "2026-05-06",
+      "status": "confirmed"
+    },
+    {
+      "id": 83,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Liam Brown",
+      "checkIn": "2026-05-09",
+      "checkOut": "2026-05-14",
+      "status": "confirmed"
+    },
+    {
+      "id": 84,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-05-26",
+      "checkOut": "2026-05-27",
+      "status": "confirmed"
+    },
+    {
+      "id": 85,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-05-12",
+      "checkOut": "2026-05-16",
+      "status": "confirmed"
+    },
+    {
+      "id": 86,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-06-08",
+      "checkOut": "2026-06-13",
+      "status": "confirmed"
+    },
+    {
+      "id": 87,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-06-08",
+      "checkOut": "2026-06-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 88,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Omar Khalil",
+      "checkIn": "2026-06-24",
+      "checkOut": "2026-06-29",
+      "status": "confirmed"
+    },
+    {
+      "id": 89,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-06-07",
+      "checkOut": "2026-06-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 90,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Emma Davis",
+      "checkIn": "2026-06-17",
+      "checkOut": "2026-06-20",
+      "status": "confirmed"
+    },
+    {
+      "id": 91,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-06-10",
+      "checkOut": "2026-06-11",
+      "status": "cancelled"
+    },
+    {
+      "id": 92,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Nina Roth",
+      "checkIn": "2026-06-03",
+      "checkOut": "2026-06-06",
+      "status": "confirmed"
+    },
+    {
+      "id": 93,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-06-08",
+      "checkOut": "2026-06-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 94,
+      "hotelId": "mansourian",
+      "roomId": 5,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-06-25",
+      "checkOut": "2026-06-26",
+      "status": "confirmed"
+    },
+    {
+      "id": 95,
+      "hotelId": "mansourian",
+      "roomId": 6,
+      "guestName": "Emma Davis",
+      "checkIn": "2026-06-19",
+      "checkOut": "2026-06-23",
+      "status": "confirmed"
+    },
+    {
+      "id": 96,
+      "hotelId": "mansourian",
+      "roomId": 7,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-06-20",
+      "checkOut": "2026-06-22",
+      "status": "confirmed"
+    },
+    {
+      "id": 97,
+      "hotelId": "dortburg",
+      "roomId": 8,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-01-05",
+      "checkOut": "2026-01-07",
+      "status": "confirmed"
+    },
+    {
+      "id": 98,
+      "hotelId": "dortburg",
+      "roomId": 9,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-01-23",
+      "checkOut": "2026-01-28",
+      "status": "confirmed"
+    },
+    {
+      "id": 99,
+      "hotelId": "dortburg",
+      "roomId": 8,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-02-21",
+      "checkOut": "2026-02-26",
+      "status": "confirmed"
+    },
+    {
+      "id": 100,
+      "hotelId": "dortburg",
+      "roomId": 10,
+      "guestName": "Liam Brown",
+      "checkIn": "2026-02-06",
+      "checkOut": "2026-02-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 101,
+      "hotelId": "dortburg",
+      "roomId": 9,
+      "guestName": "Ava Johnson",
+      "checkIn": "2026-02-22",
+      "checkOut": "2026-02-26",
+      "status": "confirmed"
+    },
+    {
+      "id": 102,
+      "hotelId": "dortburg",
+      "roomId": 10,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-02-13",
+      "checkOut": "2026-02-17",
+      "status": "confirmed"
+    },
+    {
+      "id": 103,
+      "hotelId": "dortburg",
+      "roomId": 11,
+      "guestName": "Layla Hassan",
+      "checkIn": "2026-03-25",
+      "checkOut": "2026-03-26",
+      "status": "confirmed"
+    },
+    {
+      "id": 104,
+      "hotelId": "dortburg",
+      "roomId": 8,
+      "guestName": "Emma Davis",
+      "checkIn": "2026-03-24",
+      "checkOut": "2026-03-25",
+      "status": "confirmed"
+    },
+    {
+      "id": 105,
+      "hotelId": "dortburg",
+      "roomId": 9,
+      "guestName": "Omar Khalil",
+      "checkIn": "2026-03-09",
+      "checkOut": "2026-03-11",
+      "status": "confirmed"
+    },
+    {
+      "id": 106,
+      "hotelId": "dortburg",
+      "roomId": 10,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-03-09",
+      "checkOut": "2026-03-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 107,
+      "hotelId": "dortburg",
+      "roomId": 8,
+      "guestName": "Ava Johnson",
+      "checkIn": "2026-03-07",
+      "checkOut": "2026-03-11",
+      "status": "confirmed"
+    },
+    {
+      "id": 108,
+      "hotelId": "dortburg",
+      "roomId": 8,
+      "guestName": "Layla Hassan",
+      "checkIn": "2026-03-26",
+      "checkOut": "2026-03-29",
+      "status": "confirmed"
+    },
+    {
+      "id": 109,
+      "hotelId": "dortburg",
+      "roomId": 10,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-03-17",
+      "checkOut": "2026-03-20",
+      "status": "confirmed"
+    },
+    {
+      "id": 110,
+      "hotelId": "dortburg",
+      "roomId": 11,
+      "guestName": "Nina Roth",
+      "checkIn": "2026-04-08",
+      "checkOut": "2026-04-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 111,
+      "hotelId": "dortburg",
+      "roomId": 9,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-04-02",
+      "checkOut": "2026-04-05",
+      "status": "confirmed"
+    },
+    {
+      "id": 112,
+      "hotelId": "dortburg",
+      "roomId": 8,
+      "guestName": "Liam Brown",
+      "checkIn": "2026-04-25",
+      "checkOut": "2026-04-28",
+      "status": "confirmed"
+    },
+    {
+      "id": 113,
+      "hotelId": "dortburg",
+      "roomId": 8,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-04-06",
+      "checkOut": "2026-04-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 114,
+      "hotelId": "dortburg",
+      "roomId": 9,
+      "guestName": "Yara Saad",
+      "checkIn": "2026-04-20",
+      "checkOut": "2026-04-22",
+      "status": "confirmed"
+    },
+    {
+      "id": 115,
+      "hotelId": "dortburg",
+      "roomId": 8,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-04-16",
+      "checkOut": "2026-04-19",
+      "status": "cancelled"
+    },
+    {
+      "id": 116,
+      "hotelId": "dortburg",
+      "roomId": 9,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-04-08",
+      "checkOut": "2026-04-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 117,
+      "hotelId": "dortburg",
+      "roomId": 8,
+      "guestName": "Emma Davis",
+      "checkIn": "2026-04-05",
+      "checkOut": "2026-04-07",
+      "status": "confirmed"
+    },
+    {
+      "id": 118,
+      "hotelId": "dortburg",
+      "roomId": 11,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-05-01",
+      "checkOut": "2026-05-03",
+      "status": "confirmed"
+    },
+    {
+      "id": 119,
+      "hotelId": "dortburg",
+      "roomId": 10,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-05-26",
+      "checkOut": "2026-05-28",
+      "status": "confirmed"
+    },
+    {
+      "id": 120,
+      "hotelId": "dortburg",
+      "roomId": 9,
+      "guestName": "Layla Hassan",
+      "checkIn": "2026-05-14",
+      "checkOut": "2026-05-16",
+      "status": "cancelled"
+    },
+    {
+      "id": 121,
+      "hotelId": "dortburg",
+      "roomId": 8,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-05-26",
+      "checkOut": "2026-05-27",
+      "status": "confirmed"
+    },
+    {
+      "id": 122,
+      "hotelId": "dortburg",
+      "roomId": 9,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-06-13",
+      "checkOut": "2026-06-16",
+      "status": "confirmed"
+    },
+    {
+      "id": 123,
+      "hotelId": "dortburg",
+      "roomId": 11,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-06-18",
+      "checkOut": "2026-06-23",
+      "status": "confirmed"
+    },
+    {
+      "id": 124,
+      "hotelId": "dortburg",
+      "roomId": 9,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-06-07",
+      "checkOut": "2026-06-12",
+      "status": "cancelled"
+    },
+    {
+      "id": 125,
+      "hotelId": "dortburg",
+      "roomId": 11,
+      "guestName": "Liam Brown",
+      "checkIn": "2026-06-02",
+      "checkOut": "2026-06-03",
+      "status": "confirmed"
+    },
+    {
+      "id": 126,
+      "hotelId": "dortburg",
+      "roomId": 10,
+      "guestName": "Ava Johnson",
+      "checkIn": "2026-06-01",
+      "checkOut": "2026-06-06",
+      "status": "cancelled"
+    },
+    {
+      "id": 127,
+      "hotelId": "dortburg",
+      "roomId": 9,
+      "guestName": "Layla Hassan",
+      "checkIn": "2026-06-26",
+      "checkOut": "2026-06-29",
+      "status": "confirmed"
+    },
+    {
+      "id": 128,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-01-07",
+      "checkOut": "2026-01-11",
+      "status": "confirmed"
+    },
+    {
+      "id": 129,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Lucas Garcia",
+      "checkIn": "2026-01-25",
+      "checkOut": "2026-01-30",
+      "status": "confirmed"
+    },
+    {
+      "id": 130,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-01-14",
+      "checkOut": "2026-01-19",
+      "status": "confirmed"
+    },
+    {
+      "id": 131,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-02-06",
+      "checkOut": "2026-02-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 132,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-02-17",
+      "checkOut": "2026-02-21",
+      "status": "confirmed"
+    },
+    {
+      "id": 133,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-02-24",
+      "checkOut": "2026-02-28",
+      "status": "confirmed"
+    },
+    {
+      "id": 134,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-02-07",
+      "checkOut": "2026-02-10",
+      "status": "cancelled"
+    },
+    {
+      "id": 135,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Layla Hassan",
+      "checkIn": "2026-03-05",
+      "checkOut": "2026-03-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 136,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-03-04",
+      "checkOut": "2026-03-07",
+      "status": "confirmed"
+    },
+    {
+      "id": 137,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-03-06",
+      "checkOut": "2026-03-07",
+      "status": "confirmed"
+    },
+    {
+      "id": 138,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-03-13",
+      "checkOut": "2026-03-18",
+      "status": "confirmed"
+    },
+    {
+      "id": 139,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Layla Hassan",
+      "checkIn": "2026-03-07",
+      "checkOut": "2026-03-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 140,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Layla Hassan",
+      "checkIn": "2026-03-21",
+      "checkOut": "2026-03-25",
+      "status": "confirmed"
+    },
+    {
+      "id": 141,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-04-15",
+      "checkOut": "2026-04-16",
+      "status": "cancelled"
+    },
+    {
+      "id": 142,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-04-20",
+      "checkOut": "2026-04-22",
+      "status": "confirmed"
+    },
+    {
+      "id": 143,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-04-24",
+      "checkOut": "2026-04-25",
+      "status": "confirmed"
+    },
+    {
+      "id": 144,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-04-21",
+      "checkOut": "2026-04-25",
+      "status": "confirmed"
+    },
+    {
+      "id": 145,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Yara Saad",
+      "checkIn": "2026-04-23",
+      "checkOut": "2026-04-28",
+      "status": "confirmed"
+    },
+    {
+      "id": 146,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-04-05",
+      "checkOut": "2026-04-07",
+      "status": "confirmed"
+    },
+    {
+      "id": 147,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Emma Davis",
+      "checkIn": "2026-04-23",
+      "checkOut": "2026-04-26",
+      "status": "confirmed"
+    },
+    {
+      "id": 148,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Emma Davis",
+      "checkIn": "2026-04-06",
+      "checkOut": "2026-04-07",
+      "status": "confirmed"
+    },
+    {
+      "id": 149,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Layla Hassan",
+      "checkIn": "2026-04-26",
+      "checkOut": "2026-04-28",
+      "status": "confirmed"
+    },
+    {
+      "id": 150,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-04-14",
+      "checkOut": "2026-04-19",
+      "status": "cancelled"
+    },
+    {
+      "id": 151,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Omar Khalil",
+      "checkIn": "2026-04-10",
+      "checkOut": "2026-04-15",
+      "status": "cancelled"
+    },
+    {
+      "id": 152,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Lucas Garcia",
+      "checkIn": "2026-05-05",
+      "checkOut": "2026-05-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 153,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Hugo Mueller",
+      "checkIn": "2026-05-04",
+      "checkOut": "2026-05-05",
+      "status": "confirmed"
+    },
+    {
+      "id": 154,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-05-10",
+      "checkOut": "2026-05-12",
+      "status": "confirmed"
+    },
+    {
+      "id": 155,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-05-24",
+      "checkOut": "2026-05-27",
+      "status": "cancelled"
+    },
+    {
+      "id": 156,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-05-14",
+      "checkOut": "2026-05-16",
+      "status": "cancelled"
+    },
+    {
+      "id": 157,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-05-18",
+      "checkOut": "2026-05-22",
+      "status": "confirmed"
+    },
+    {
+      "id": 158,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-05-12",
+      "checkOut": "2026-05-13",
+      "status": "confirmed"
+    },
+    {
+      "id": 159,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-05-03",
+      "checkOut": "2026-05-05",
+      "status": "cancelled"
+    },
+    {
+      "id": 160,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Omar Khalil",
+      "checkIn": "2026-05-13",
+      "checkOut": "2026-05-18",
+      "status": "confirmed"
+    },
+    {
+      "id": 161,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-06-08",
+      "checkOut": "2026-06-11",
+      "status": "confirmed"
+    },
+    {
+      "id": 162,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-06-17",
+      "checkOut": "2026-06-22",
+      "status": "confirmed"
+    },
+    {
+      "id": 163,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-06-07",
+      "checkOut": "2026-06-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 164,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-06-07",
+      "checkOut": "2026-06-08",
+      "status": "confirmed"
+    },
+    {
+      "id": 165,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-06-18",
+      "checkOut": "2026-06-21",
+      "status": "confirmed"
+    },
+    {
+      "id": 166,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-06-25",
+      "checkOut": "2026-06-28",
+      "status": "confirmed"
+    },
+    {
+      "id": 167,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-06-11",
+      "checkOut": "2026-06-12",
+      "status": "confirmed"
+    },
+    {
+      "id": 168,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-06-24",
+      "checkOut": "2026-06-27",
+      "status": "cancelled"
+    },
+    {
+      "id": 169,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Lucas Garcia",
+      "checkIn": "2026-06-20",
+      "checkOut": "2026-06-23",
+      "status": "confirmed"
+    },
+    {
+      "id": 170,
+      "hotelId": "velvet",
+      "roomId": 13,
+      "guestName": "Hugo Mueller",
+      "checkIn": "2026-06-17",
+      "checkOut": "2026-06-18",
+      "status": "confirmed"
+    },
+    {
+      "id": 171,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Omar Khalil",
+      "checkIn": "2026-06-26",
+      "checkOut": "2026-06-27",
+      "status": "confirmed"
+    },
+    {
+      "id": 172,
+      "hotelId": "velvet",
+      "roomId": 14,
+      "guestName": "Noah Smith",
+      "checkIn": "2026-06-06",
+      "checkOut": "2026-06-09",
+      "status": "confirmed"
+    },
+    {
+      "id": 173,
+      "hotelId": "velvet",
+      "roomId": 12,
+      "guestName": "Hugo Mueller",
+      "checkIn": "2026-06-17",
+      "checkOut": "2026-06-21",
+      "status": "confirmed"
+    },
+    {
+      "id": 174,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-01-10",
+      "checkOut": "2026-01-13",
+      "status": "confirmed"
+    },
+    {
+      "id": 175,
+      "hotelId": "palmyra",
+      "roomId": 16,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-02-06",
+      "checkOut": "2026-02-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 176,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Lucas Garcia",
+      "checkIn": "2026-02-12",
+      "checkOut": "2026-02-15",
+      "status": "confirmed"
+    },
+    {
+      "id": 177,
+      "hotelId": "palmyra",
+      "roomId": 16,
+      "guestName": "Liam Brown",
+      "checkIn": "2026-03-26",
+      "checkOut": "2026-03-29",
+      "status": "confirmed"
+    },
+    {
+      "id": 178,
+      "hotelId": "palmyra",
+      "roomId": 16,
+      "guestName": "Oliver Wilson",
+      "checkIn": "2026-03-18",
+      "checkOut": "2026-03-23",
+      "status": "confirmed"
+    },
+    {
+      "id": 179,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-03-02",
+      "checkOut": "2026-03-03",
+      "status": "confirmed"
+    },
+    {
+      "id": 180,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-03-08",
+      "checkOut": "2026-03-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 181,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-03-08",
+      "checkOut": "2026-03-12",
+      "status": "cancelled"
+    },
+    {
+      "id": 182,
+      "hotelId": "palmyra",
+      "roomId": 16,
+      "guestName": "Ava Johnson",
+      "checkIn": "2026-04-04",
+      "checkOut": "2026-04-07",
+      "status": "confirmed"
+    },
+    {
+      "id": 183,
+      "hotelId": "palmyra",
+      "roomId": 16,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-04-03",
+      "checkOut": "2026-04-06",
+      "status": "confirmed"
+    },
+    {
+      "id": 184,
+      "hotelId": "palmyra",
+      "roomId": 16,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-04-11",
+      "checkOut": "2026-04-14",
+      "status": "confirmed"
+    },
+    {
+      "id": 185,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Sophia Martin",
+      "checkIn": "2026-04-03",
+      "checkOut": "2026-04-05",
+      "status": "cancelled"
+    },
+    {
+      "id": 186,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Nina Roth",
+      "checkIn": "2026-04-11",
+      "checkOut": "2026-04-12",
+      "status": "confirmed"
+    },
+    {
+      "id": 187,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Nina Roth",
+      "checkIn": "2026-05-11",
+      "checkOut": "2026-05-12",
+      "status": "cancelled"
+    },
+    {
+      "id": 188,
+      "hotelId": "palmyra",
+      "roomId": 16,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-05-07",
+      "checkOut": "2026-05-08",
+      "status": "cancelled"
+    },
+    {
+      "id": 189,
+      "hotelId": "palmyra",
+      "roomId": 16,
+      "guestName": "Omar Khalil",
+      "checkIn": "2026-05-23",
+      "checkOut": "2026-05-27",
+      "status": "confirmed"
+    },
+    {
+      "id": 190,
+      "hotelId": "palmyra",
+      "roomId": 16,
+      "guestName": "Dina Fares",
+      "checkIn": "2026-05-08",
+      "checkOut": "2026-05-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 191,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Emma Davis",
+      "checkIn": "2026-05-11",
+      "checkOut": "2026-05-13",
+      "status": "confirmed"
+    },
+    {
+      "id": 192,
+      "hotelId": "palmyra",
+      "roomId": 16,
+      "guestName": "Mia Chen",
+      "checkIn": "2026-05-26",
+      "checkOut": "2026-05-31",
+      "status": "confirmed"
+    },
+    {
+      "id": 193,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-06-26",
+      "checkOut": "2026-06-29",
+      "status": "confirmed"
+    },
+    {
+      "id": 194,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Sara Aziz",
+      "checkIn": "2026-06-05",
+      "checkOut": "2026-06-10",
+      "status": "confirmed"
+    },
+    {
+      "id": 195,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Tariq Alami",
+      "checkIn": "2026-06-14",
+      "checkOut": "2026-06-16",
+      "status": "confirmed"
+    },
+    {
+      "id": 196,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Elena Petrov",
+      "checkIn": "2026-06-18",
+      "checkOut": "2026-06-21",
+      "status": "confirmed"
+    },
+    {
+      "id": 197,
+      "hotelId": "palmyra",
+      "roomId": 15,
+      "guestName": "Karim Nasser",
+      "checkIn": "2026-06-05",
+      "checkOut": "2026-06-09",
+      "status": "confirmed"
+    }
+  ]
+}
