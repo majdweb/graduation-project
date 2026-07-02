@@ -29,7 +29,7 @@ export default function Hotels() {
   const [filters, setFilters] = useState({
     hotel: '',
     city: location.state?.initialFilters?.city || '',
-    stars: [],
+    stars: location.state?.initialFilters?.stars ?? [],
   })
 
   useEffect(() => {

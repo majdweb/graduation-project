@@ -33,6 +33,11 @@ function StarPicker({ value, onChange }) {
   );
 }
 
+const SYRIAN_CITIES = [
+  'Damascus', 'Aleppo', 'Homs', 'Hama', 'Latakia', 'Tartous',
+  'Idlib', 'Palmyra', 'Bloudan',
+];
+
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
 // At least 8 chars, 1 uppercase, 1 lowercase, 1 special character
@@ -422,14 +427,16 @@ function SignUp() {
 
               <label>
                 City
-                <input
+                <select
                   name="city"
-                  type="text"
                   value={form.city}
                   onChange={handleChange}
-                  placeholder="Enter city"
-                  autoComplete="address-level2"
-                />
+                >
+                  <option value="">Select a city</option>
+                  {SYRIAN_CITIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
                 {errors.city && <span className="error">{errors.city}</span>}
               </label>
 

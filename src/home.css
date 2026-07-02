@@ -1161,6 +1161,60 @@
 }
 
 /* ========================= */
+/*     FEATURED HOTELS       */
+/* ========================= */
+.fh-section { padding: 90px 40px; background: var(--background); }
+.fh-header  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
+.fh-title   { font-size: 2.4rem; font-weight: 800; color: var(--primary); margin: 0; }
+.fh-more-btn { border: 2px solid var(--primary); color: var(--primary); background: none; font-weight: 700; padding: 8px 20px; border-radius: 999px; cursor: pointer; font-size: 0.95rem; font-family: inherit; transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
+.fh-more-btn:hover { background: var(--primary); color: #fff; transform: translateY(-2px); }
+.fh-grid  { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
+.fh-card  { border-radius: 16px; overflow: hidden; background: var(--surface); box-shadow: 0 4px 18px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.fh-card:hover { transform: translateY(-8px); box-shadow: 0 12px 32px rgba(42,61,102,0.18); }
+.fh-img   { width: 100%; height: 200px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.fh-img img { width: 100%; height: 100%; object-fit: cover; }
+.fh-img-icon { font-size: 3rem; opacity: 0.5; }
+.fh-card-body { padding: 16px 18px 20px; }
+.fh-stars { color: #f59e0b; font-size: 1rem; margin: 0 0 6px; letter-spacing: 2px; }
+.fh-hotel-name { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin: 0 0 4px; }
+.fh-city  { font-size: 0.85rem; color: #6b7280; margin: 0 0 6px; }
+.fh-price { font-size: 0.9rem; font-weight: 600; color: var(--accent); margin: 0; }
+@media (max-width: 600px) { .fh-section { padding: 60px 20px; } }
+
+/* ========================= */
+/*       LIVE STATS          */
+/* ========================= */
+.ls-section       { background: var(--background); padding: 90px 40px; }
+.ls-heading       { text-align: center; margin-bottom: 52px; animation: ls-fade-up 0.5s ease both; }
+.ls-title         { font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 800; color: var(--primary); margin: 0 0 10px; }
+.ls-subtitle      { font-size: 1rem; color: #6b7280; margin: 0; }
+.ls-grid          { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto; }
+.ls-card          { position: relative; border-radius: 18px; overflow: hidden; height: 340px; cursor: default; animation: ls-fade-up 0.5s ease both; transition: transform 0.35s ease; }
+.ls-card:nth-child(1) { animation-delay: 0.05s; }
+.ls-card:nth-child(2) { animation-delay: 0.12s; }
+.ls-card:nth-child(3) { animation-delay: 0.19s; }
+.ls-card:nth-child(4) { animation-delay: 0.26s; }
+.ls-card:hover        { transform: scale(1.025); }
+.ls-card-img          { position: absolute; inset: 0; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); }
+.ls-card-img img      { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ls-card-overlay      { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.10) 55%, transparent 100%); }
+.ls-card-body         { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 22px; }
+.ls-num               { display: block; font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 900; color: #fff; line-height: 1; margin-bottom: 6px; }
+.ls-label             { font-size: 0.82rem; color: rgba(255,255,255,0.80); font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; }
+@keyframes ls-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 960px) {
+  .ls-grid { grid-template-columns: repeat(2, 1fr); max-width: 640px; margin: 0 auto; }
+  .ls-card { height: 300px; }
+}
+@media (max-width: 520px) {
+  .ls-section { padding: 60px 20px; }
+  .ls-grid    { grid-template-columns: 1fr; max-width: 400px; gap: 16px; }
+}
+
+/* ========================= */
 /*      SCROLL ANIMATIONS    */
 /* ========================= */
 [data-reveal] {

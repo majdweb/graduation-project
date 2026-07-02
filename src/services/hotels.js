@@ -19,6 +19,10 @@ export async function getHotels() {
   return request("/api/hotels");
 }
 
+export async function getStats() {
+  return request("/api/stats");
+}
+
 export async function getHotelsAnalytics() {
   return request("/api/admin/hotels-analytics");
 }

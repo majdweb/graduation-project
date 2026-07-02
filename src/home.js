@@ -3,7 +3,12 @@ import heroImage from './assets/homepage_slider.webp';
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useSiteContent } from './useSiteContent';
+import { getHotels, getStats } from './services/hotels';
 import { getCurrentRole, getCurrentUser, clearAuth } from './services/auth';
+import hotelsStatImg  from './assets/verified hotels.jpg';
+import citiesStatImg  from './assets/city.jpg';
+import roomsStatImg     from './assets/rooms.jpg';
+import bookingsStatImg  from './assets/total bookings.jpg';
 import damascusImg from './assets/Damascus.jpg';
 import aleppoImg   from './assets/Aleppo.jpg';
 import tartousImg  from './assets/Tartous.jpg';
@@ -28,6 +33,25 @@ export default function Home() {
   const currentUser = isGuest ? getCurrentUser() : null;
 
   const [searchForm, setSearchForm] = useState({ destination: '', checkIn: '', checkOut: '', guests: 1 });
+  const [featuredHotels, setFeaturedHotels] = useState([]);
+  const [hotelStats, setHotelStats] = useState({ hotels: 0, cities: 0, bookings: 0, rooms: 0 });
+
+  useEffect(() => {
+    getHotels().then(hotels => {
+      const highStar = hotels.filter(h => Number(h.stars) >= 4);
+      const byCity = {};
+      highStar.forEach(h => {
+        if (!byCity[h.city] || Number(h.stars) > Number(byCity[h.city].stars)) {
+          byCity[h.city] = h;
+        }
+      });
+      setFeaturedHotels(Object.values(byCity).sort((a, b) => Number(b.stars) - Number(a.stars)));
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    getStats().then(s => setHotelStats(s)).catch(() => {});
+  }, []);
 
   const handleSearchChange = (e) => {
     const { name, value } = e.target;
@@ -83,7 +107,7 @@ export default function Home() {
     );
     els.forEach(el => observer.observe(el));
     return () => observer.disconnect();
-  }, []);
+  }, [featuredHotels]);
 
   const navLinks = [
     { label: 'Home', href: '/' },
@@ -230,50 +254,94 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Stats Section ── */}
-      <section className="hs-section">
-        <h2 className="hs-main-title" data-reveal>★ Numbers ★</h2>
-        <div className="hs-stats-row" data-reveal>
-          <div className="hs-stat">
-            <div className="hs-num-wrap">
-              <span className="hs-star">★</span>
-              <p className="hs-number">50+</p>
-              <span className="hs-star">★</span>
-            </div>
-            <p className="hs-label">Over Verified Hotels</p>
+      {/* ── Featured Hotels ── */}
+      {featuredHotels.length > 0 && (
+        <section className="fh-section">
+          <div className="fh-header" data-reveal>
+            <h2 className="fh-title">Recommended Hotels</h2>
+            <button
+              className="fh-more-btn"
+              onClick={() => navigate('/hotels', { state: { initialFilters: { stars: [4, 5] } } })}
+            >
+              View More →
+            </button>
           </div>
-
-          <div className="hs-divider" />
-
-          <div className="hs-stat">
-            <span className="hs-star">★</span>
-            <p className="hs-number">5K+</p>
-            <span className="hs-star">★</span>
-            <p className="hs-label">Over 5K Bookings</p>
+          <div className="fh-grid">
+            {featuredHotels.map((hotel, i) => (
+              <div
+                key={hotel.hotelId || hotel.hotelName}
+                className="fh-card"
+                data-reveal
+                style={{ transitionDelay: `${i * 0.08}s` }}
+                onClick={() => navigate('/hotels', { state: { initialFilters: { city: hotel.city } } })}
+              >
+                <div className="fh-img">
+                  {hotel.cardPhoto
+                    ? <img src={hotel.cardPhoto} alt={hotel.hotelName} />
+                    : <span className="fh-img-icon">🏨</span>
+                  }
+                </div>
+                <div className="fh-card-body">
+                  <div className="fh-stars">{'★'.repeat(Number(hotel.stars) || 0)}</div>
+                  <h3 className="fh-hotel-name">{hotel.hotelName}</h3>
+                  <p className="fh-city">{hotel.city}</p>
+                  {hotel.minPrice && (
+                    <p className="fh-price">From ${hotel.minPrice}/night</p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        </section>
+      )}
 
-        <div className="hs-avail" data-reveal>
-          <h2 className="hs-avail-title">★ Availability ★ </h2>
-          <p className="hs-avail-sub">Available in all Syrian cities</p>
+      {/* ── Live Stats ── */}
+      <section className="ls-section">
+        <div className="ls-heading">
+          <h2 className="ls-title">Numbers</h2>
+          <p className="ls-subtitle">Live data from our platform</p>
         </div>
-      </section>
-
-      <section id="testimonials" className="testimonials-section">
-        <h2 className="hs-main-title" data-reveal>{content.testimonials.sectionTitle}</h2>
-        <div className="testimonials-grid" id="reviews-container">
-          {content.testimonials.reviews.map((review, i) => (
-            <div key={review.id} className="testimonial-card" data-reveal style={{ transitionDelay: `${i * 0.1}s` }}>
-              <div className="testimonial-user">
-                <img src={review.img} alt={review.name} />
-                <h4>{review.name}</h4>
-              </div>
-              <p className="testimonial-text">{review.text}</p>
-              <div className="stars">
-                {"★".repeat(review.stars)}{"☆".repeat(5 - review.stars)}
-              </div>
+        <div className="ls-grid">
+          <div className="ls-card">
+            <div className="ls-card-img">
+              <img src={hotelsStatImg} alt="Hotels" />
             </div>
-          ))}
+            <div className="ls-card-overlay" />
+            <div className="ls-card-body">
+              <span className="ls-num">{hotelStats.hotels || '—'}</span>
+              <span className="ls-label">Verified Hotels</span>
+            </div>
+          </div>
+          <div className="ls-card">
+            <div className="ls-card-img">
+              <img src={citiesStatImg} alt="Cities" />
+            </div>
+            <div className="ls-card-overlay" />
+            <div className="ls-card-body">
+              <span className="ls-num">{hotelStats.cities || '—'}</span>
+              <span className="ls-label">Cities Covered</span>
+            </div>
+          </div>
+          <div className="ls-card">
+            <div className="ls-card-img">
+              <img src={bookingsStatImg} alt="Bookings" />
+            </div>
+            <div className="ls-card-overlay" />
+            <div className="ls-card-body">
+              <span className="ls-num">{hotelStats.bookings || '—'}</span>
+              <span className="ls-label">Total Bookings</span>
+            </div>
+          </div>
+          <div className="ls-card">
+            <div className="ls-card-img">
+              <img src={roomsStatImg} alt="Rooms" />
+            </div>
+            <div className="ls-card-overlay" />
+            <div className="ls-card-body">
+              <span className="ls-num">{hotelStats.rooms || '—'}</span>
+              <span className="ls-label">Rooms Available</span>
+            </div>
+          </div>
         </div>
       </section>
 

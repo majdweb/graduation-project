@@ -226,22 +226,21 @@ export default function OwnerHotelInfo() {
             </label>
 
             <label>
-              <div className="small muted" style={{ marginBottom: 4 }}>City</div>
+              <div className="small muted" style={{ marginBottom: 4 }}>City <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>(cannot be changed)</span></div>
               <input
                 value={form.city}
-                onChange={(e) => updateField("city", e.target.value)}
-                placeholder="City"
-                style={{ width: "100%", padding: "10px 12px", border: "1px solid #cbd5e1", borderRadius: 8 }}
+                readOnly
+                style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#f8fafc", color: "#64748b", cursor: "not-allowed" }}
               />
             </label>
 
             <label style={{ gridColumn: "1 / -1" }}>
-              <div className="small muted" style={{ marginBottom: 4 }}>Address</div>
+              <div className="small muted" style={{ marginBottom: 4 }}>Address <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>(cannot be changed)</span></div>
               <input
                 value={form.address}
-                onChange={(e) => updateField("address", e.target.value)}
+                readOnly
                 placeholder="Street, district, and details"
-                style={{ width: "100%", padding: "10px 12px", border: "1px solid #cbd5e1", borderRadius: 8 }}
+                style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#f8fafc", color: "#64748b", cursor: "not-allowed" }}
               />
             </label>
 

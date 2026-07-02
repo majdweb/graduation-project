@@ -328,6 +328,14 @@ app.get('/api/hotels', (req, res) => {
   res.json(list);
 });
 
+app.get('/api/stats', (req, res) => {
+  const approvedOwners = users.filter(u => u.role === 'hotel_owner' && (u.hotelName || u.hotelId) && u.approved !== false);
+  const hotelCount = approvedOwners.length;
+  const cityCount = new Set(approvedOwners.map(u => u.city).filter(Boolean)).size;
+  const bookingCount = reservations.filter(r => r.status === 'confirmed').length;
+  res.json({ hotels: hotelCount, cities: cityCount, bookings: bookingCount, rooms: rooms.length });
+});
+
 // Public: rooms enriched with their hotel's name/city, used for home-search results
 app.get('/api/rooms/search', (req, res) => {
   const checkIn = typeof req.query.checkIn === 'string' ? req.query.checkIn : '';

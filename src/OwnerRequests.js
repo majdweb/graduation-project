@@ -7,7 +7,7 @@ import { getCurrentUser } from './services/auth';
 
 const MAX_DOC_BYTES = 8 * 1024 * 1024; // 8MB source cap (image is downscaled before storing)
 
-const emptyForm = { hotelName: '', city: '', address: '', phoneNumber: '', description: '', stars: 0 };
+const emptyForm = { address: '', stars: 0 };
 
 function StarPicker({ value, onChange }) {
   return (
@@ -65,11 +65,7 @@ export default function OwnerRequests() {
   useEffect(() => {
     if (type === 'edit') {
       setForm({
-        hotelName: owner.hotelName || '',
-        city: owner.city || '',
         address: owner.address || '',
-        phoneNumber: owner.phoneNumber || '',
-        description: owner.description || '',
         stars: owner.stars || 0,
       });
     } else {
@@ -117,10 +113,6 @@ export default function OwnerRequests() {
   function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    if (!form.hotelName.trim()) {
-      setError('Hotel name is required.');
-      return;
-    }
     if (!doc) {
       setError('Please attach a document image (license / ownership proof).');
       return;
@@ -136,11 +128,7 @@ export default function OwnerRequests() {
         ownerName: identity.ownerName.trim(),
         ownerEmail: identity.ownerEmail.trim(),
         changes: {
-          hotelName: form.hotelName.trim(),
-          city: form.city.trim(),
           address: form.address.trim(),
-          phoneNumber: form.phoneNumber.trim(),
-          description: form.description.trim(),
           stars: form.stars || undefined,
         },
         document: doc,
@@ -205,30 +193,10 @@ export default function OwnerRequests() {
                 onChange={(e) => setIdentity((p) => ({ ...p, ownerEmail: e.target.value }))}
                 placeholder="you@email.com" className="orq-input" />
             </label>
-            <label>
-              <div className="small muted" style={{ marginBottom: 4 }}>Hotel Name</div>
-              <input value={form.hotelName} onChange={(e) => updateField('hotelName', e.target.value)}
-                placeholder="Hotel name" required className="orq-input" />
-            </label>
-            <label>
-              <div className="small muted" style={{ marginBottom: 4 }}>City</div>
-              <input value={form.city} onChange={(e) => updateField('city', e.target.value)}
-                placeholder="City" className="orq-input" />
-            </label>
             <label style={{ gridColumn: '1 / -1' }}>
               <div className="small muted" style={{ marginBottom: 4 }}>Address</div>
               <input value={form.address} onChange={(e) => updateField('address', e.target.value)}
                 placeholder="Street, district, details" className="orq-input" />
-            </label>
-            <label>
-              <div className="small muted" style={{ marginBottom: 4 }}>Phone Number</div>
-              <input value={form.phoneNumber} onChange={(e) => updateField('phoneNumber', e.target.value)}
-                placeholder="+1 555 123 4567" className="orq-input" />
-            </label>
-            <label style={{ gridColumn: '1 / -1' }}>
-              <div className="small muted" style={{ marginBottom: 4 }}>Description</div>
-              <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)}
-                placeholder="Short description of your hotel" rows={4} className="orq-input" style={{ resize: 'vertical' }} />
             </label>
             <div style={{ gridColumn: '1 / -1' }}>
               <div className="small muted" style={{ marginBottom: 6 }}>Hotel Stars</div>
