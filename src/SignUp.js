@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./signUp.css";
-import { signUpUser, verifySignUpCode } from "./services/auth";
+import { signUpUser, signInUser, verifySignUpCode } from "./services/auth";
 import { addRequest } from "./data/hotelRequests";
 import { fileToResizedDataUrl } from "./data/imageUtil";
 
@@ -10,22 +11,62 @@ const initialForm = {
   phoneNumber: "",
   hotelName: "",
   city: "",
+  stars: 0,
   password: "",
   confirmPassword: "",
   acceptTerms: false,
 };
+
+function StarPicker({ value, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: 6 }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span
+          key={n}
+          onClick={() => onChange(n)}
+          style={{ fontSize: 32, cursor: 'pointer', color: n <= value ? '#f59e0b' : '#d1d5db', userSelect: 'none', lineHeight: 1 }}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+}
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^\+?[0-9\s\-()]{7,20}$/;
 // At least 8 chars, 1 uppercase, 1 lowercase, 1 special character
 const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
+const LEGAL_CONTENT = {
+  terms: {
+    title: "Terms of Service",
+    paragraphs: [
+      "Welcome to Velvet Compass. By creating an account and using our booking platform, you agree to use the service only for lawful purposes and to provide accurate information when registering or making a reservation.",
+      "Bookings made through Velvet Compass are subject to each hotel's individual cancellation and payment policies, which will be displayed before you confirm a reservation. Velvet Compass acts as a marketplace connecting guests and hotel owners, and is not itself responsible for the condition or service quality of any listed property.",
+      "Hotel owners are responsible for keeping their listings, pricing, and availability accurate. Misuse of the platform, fraudulent listings, or fraudulent bookings may result in suspension of an account at our discretion.",
+      "We may update these terms from time to time. Continued use of Velvet Compass after changes are posted constitutes acceptance of the revised terms.",
+    ],
+  },
+  privacy: {
+    title: "Privacy Policy",
+    paragraphs: [
+      "Velvet Compass collects the information you provide when signing up, such as your name, email address, phone number, and — for hotel owners — your property details. This information is used to create and manage your account, process bookings, and communicate with you about your reservations.",
+      "We do not sell your personal information to third parties. Limited data may be shared with hotel owners solely to facilitate a reservation you make on their property.",
+      "We use industry-standard practices to protect your data, including secure password storage. You may request access to, correction of, or deletion of your personal data at any time by contacting our support team.",
+      "Cookies and similar technologies may be used to keep you signed in and to improve your experience on the site. You can control cookie preferences through your browser settings.",
+    ],
+  },
+};
+
 function SignUp() {
+  const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
   const [doc, setDoc] = useState(null); // { name, dataUrl } — hotel document image
   const [isOwnerSignUp, setIsOwnerSignUp] = useState(false);
   const [currentPage, setCurrentPage] = useState("signup");
   const [verificationEmail, setVerificationEmail] = useState("");
+  const [verificationPassword, setVerificationPassword] = useState("");
   const [verificationNotice, setVerificationNotice] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationError, setVerificationError] = useState("");
@@ -33,6 +74,7 @@ function SignUp() {
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [legalModal, setLegalModal] = useState(null); // 'terms' | 'privacy' | null
   const [verifying, setVerifying] = useState(false);
 
   const passwordRules = useMemo(
@@ -64,6 +106,9 @@ function SignUp() {
     }
     if (isOwnerSignUp && !data.city.trim()) {
       nextErrors.city = "City is required.";
+    }
+    if (isOwnerSignUp && !data.stars) {
+      nextErrors.stars = "Please select your hotel star rating.";
     }
     if (!passwordRegex.test(data.password)) {
       nextErrors.password =
@@ -127,6 +172,7 @@ function SignUp() {
     setVerificationCode("");
     setVerificationError("");
     setVerificationSuccess("");
+    setVerificationPassword("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -154,6 +200,7 @@ function SignUp() {
     if (isOwnerSignUp) {
       payload.hotelName = form.hotelName.trim();
       payload.city = form.city.trim();
+      payload.stars = form.stars || null;
 
       // Register a "new hotel" request for the admin to approve/reject.
       // This is stored client-side (JSON in localStorage), independent of the backend.
@@ -167,6 +214,7 @@ function SignUp() {
             hotelName: payload.hotelName,
             city: payload.city,
             phoneNumber: payload.phoneNumber,
+            stars: form.stars || undefined,
           },
           document: doc,
         });
@@ -180,6 +228,7 @@ function SignUp() {
     try {
       await signUpUser(payload);
       setVerificationEmail(payload.email);
+      setVerificationPassword(payload.password);
       setVerificationNotice("");
       setVerificationCode("");
       setVerificationError("");
@@ -192,6 +241,7 @@ function SignUp() {
     } catch (err) {
       if (isFetchConnectionError(err)) {
         setVerificationEmail(payload.email);
+        setVerificationPassword(payload.password);
         setVerificationNotice(
           "We could not reach the server right now, but you can continue to verification."
         );
@@ -231,6 +281,31 @@ function SignUp() {
     try {
       await verifySignUpCode({ email: verificationEmail, code: normalizedCode });
       setVerificationSuccess("Code verified successfully.");
+
+      try {
+        const res = await signInUser({
+          email: verificationEmail,
+          password: verificationPassword,
+        });
+        const existingRaw = localStorage.getItem("mock_auth_user");
+        const existing = existingRaw ? JSON.parse(existingRaw) : {};
+        const next = {
+          ...res,
+          user: {
+            ...(existing?.user || {}),
+            ...(res?.user || {}),
+            hotelId: res?.user?.hotelId || existing?.user?.hotelId || null,
+            hotelName: res?.user?.hotelName || existing?.user?.hotelName || null,
+          },
+        };
+        localStorage.setItem("mock_auth_user", JSON.stringify(next));
+        setVerificationPassword("");
+        navigate(res?.user?.role === "hotel_owner" ? "/ownerhome" : "/");
+      } catch (signInErr) {
+        setVerificationNotice(
+          "Account verified, but we couldn't sign you in automatically. Please sign in manually."
+        );
+      }
     } catch (err) {
       setVerificationError(err.message || "Unable to verify code.");
     } finally {
@@ -358,6 +433,15 @@ function SignUp() {
                 {errors.city && <span className="error">{errors.city}</span>}
               </label>
 
+              <div>
+                <label style={{ display: 'block', marginBottom: 6 }}>Hotel star rating</label>
+                <StarPicker
+                  value={form.stars}
+                  onChange={(n) => { setSubmitError(""); setForm((prev) => ({ ...prev, stars: n })); }}
+                />
+                {errors.stars && <span className="error">{errors.stars}</span>}
+              </div>
+
               <label>
                 Document image (license / ownership proof)
                 <input type="file" accept="image/*" onChange={handleDocChange} />
@@ -415,7 +499,27 @@ function SignUp() {
               onChange={handleChange}
             />
             <span>
-              I accept the <strong>Terms</strong> and <strong>Privacy Policy</strong>.
+              I accept the{" "}
+              <span
+                className="legal-link"
+                role="button"
+                tabIndex={0}
+                onClick={() => setLegalModal("terms")}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setLegalModal("terms")}
+              >
+                Terms
+              </span>{" "}
+              and{" "}
+              <span
+                className="legal-link"
+                role="button"
+                tabIndex={0}
+                onClick={() => setLegalModal("privacy")}
+                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setLegalModal("privacy")}
+              >
+                Privacy Policy
+              </span>
+              .
             </span>
           </label>
           {errors.acceptTerms && (
@@ -436,6 +540,27 @@ function SignUp() {
           {submitError && <p className="error submit-error">{submitError}</p>}
         </form>
       </main>
+
+      {legalModal && (
+        <div className="legal-modal-overlay" onClick={() => setLegalModal(null)}>
+          <div className="legal-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="legal-modal-header">
+              <h2>{LEGAL_CONTENT[legalModal].title}</h2>
+              <button type="button" className="legal-modal-close" onClick={() => setLegalModal(null)}>
+                ✕
+              </button>
+            </div>
+            <div className="legal-modal-body">
+              {LEGAL_CONTENT[legalModal].paragraphs.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+            <button type="button" className="legal-modal-done" onClick={() => setLegalModal(null)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

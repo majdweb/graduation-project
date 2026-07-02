@@ -2,20 +2,19 @@ import './home.css';
 import heroImage from './assets/homepage_slider.webp';
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { getCurrentUser, clearAuth } from './services/auth';
 
 export default function OwnerHome() {
   const navigate = useNavigate();
 
   const ownerProfile = (() => {
     try {
-      const raw = localStorage.getItem('mock_auth_user');
-      const parsed = raw ? JSON.parse(raw) : {};
-      const user = parsed?.user || {};
+      const user = getCurrentUser() || {};
       const pendingRaw = sessionStorage.getItem('pending_signup_profile');
       const pendingProfile = pendingRaw ? JSON.parse(pendingRaw) : {};
       return {
         username: user.username || pendingProfile.username || 'Owner',
-        hotelName: user.hotelName || parsed?.hotelName || pendingProfile.hotelName || 'Your Hotel',
+        hotelName: user.hotelName || pendingProfile.hotelName || 'Your Hotel',
       };
     } catch (error) {
       return { username: 'Owner', hotelName: 'Your Hotel' };
@@ -91,16 +90,13 @@ export default function OwnerHome() {
   const navLinks = [
     { label: 'Services', href: '/services' },
     { label: 'Hotels', href: '/hotels' },
-    { label: 'Rooms', href: '/rooms' },
     { label: 'About Us', href: '/about' },
     { label: 'Owner Dashboard', href: '/owner/dashboard' }
   ];
 
   const handleSignOut = () => {
+    clearAuth();
     try {
-      localStorage.removeItem('mock_auth_user');
-      localStorage.removeItem('mock_auth_role');
-      localStorage.removeItem('mock_auth_token');
       sessionStorage.removeItem('pending_signup_role');
       sessionStorage.removeItem('pending_signup_profile');
     } catch (error) {}

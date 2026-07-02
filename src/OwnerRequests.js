@@ -3,10 +3,27 @@ import { Link } from 'react-router-dom';
 import './ownerDashboard.css';
 import { addRequest, getRequests, subscribeRequests, REQUEST_FIELDS } from './data/hotelRequests';
 import { fileToResizedDataUrl } from './data/imageUtil';
+import { getCurrentUser } from './services/auth';
 
 const MAX_DOC_BYTES = 8 * 1024 * 1024; // 8MB source cap (image is downscaled before storing)
 
-const emptyForm = { hotelName: '', city: '', address: '', phoneNumber: '', description: '' };
+const emptyForm = { hotelName: '', city: '', address: '', phoneNumber: '', description: '', stars: 0 };
+
+function StarPicker({ value, onChange }) {
+  return (
+    <div style={{ display: 'flex', gap: 6 }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span
+          key={n}
+          onClick={() => onChange(n)}
+          style={{ fontSize: 28, cursor: 'pointer', color: n <= value ? '#f59e0b' : '#d1d5db', userSelect: 'none', lineHeight: 1 }}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+}
 
 function StatusBadge({ status }) {
   const map = {
@@ -20,23 +37,18 @@ function StatusBadge({ status }) {
 
 export default function OwnerRequests() {
   const owner = useMemo(() => {
-    try {
-      const raw = localStorage.getItem('mock_auth_user');
-      const parsed = raw ? JSON.parse(raw) : {};
-      const user = parsed?.user || {};
-      return {
-        ownerName: user.username || 'Owner',
-        ownerEmail: user.email || '',
-        hotelId: String(user.hotelId || user.hotelName || user.id || ''),
-        hotelName: user.hotelName || '',
-        city: user.city || '',
-        address: user.address || '',
-        phoneNumber: user.phoneNumber || '',
-        description: user.description || '',
-      };
-    } catch {
-      return { ownerName: 'Owner', ownerEmail: '', hotelId: '' };
-    }
+    const user = getCurrentUser() || {};
+    return {
+      ownerName: user.username || 'Owner',
+      ownerEmail: user.email || '',
+      hotelId: String(user.hotelId || user.hotelName || user.id || ''),
+      hotelName: user.hotelName || '',
+      city: user.city || '',
+      address: user.address || '',
+      phoneNumber: user.phoneNumber || '',
+      description: user.description || '',
+      stars: Number(user.stars) || 0,
+    };
   }, []);
 
   const [type, setType] = useState('edit'); // 'edit' | 'create'
@@ -58,6 +70,7 @@ export default function OwnerRequests() {
         address: owner.address || '',
         phoneNumber: owner.phoneNumber || '',
         description: owner.description || '',
+        stars: owner.stars || 0,
       });
     } else {
       setForm(emptyForm);
@@ -128,6 +141,7 @@ export default function OwnerRequests() {
           address: form.address.trim(),
           phoneNumber: form.phoneNumber.trim(),
           description: form.description.trim(),
+          stars: form.stars || undefined,
         },
         document: doc,
       });
@@ -216,6 +230,11 @@ export default function OwnerRequests() {
               <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)}
                 placeholder="Short description of your hotel" rows={4} className="orq-input" style={{ resize: 'vertical' }} />
             </label>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <div className="small muted" style={{ marginBottom: 6 }}>Hotel Stars</div>
+              <StarPicker value={form.stars} onChange={(n) => updateField('stars', n)} />
+            </div>
+
             <label style={{ gridColumn: '1 / -1' }}>
               <div className="small muted" style={{ marginBottom: 4 }}>Document image (license / ownership proof) — required</div>
               <input type="file" accept="image/*" onChange={handleDoc} />
@@ -252,7 +271,8 @@ export default function OwnerRequests() {
                 {REQUEST_FIELDS.map((f) =>
                   r.changes?.[f.key] ? (
                     <div key={f.key} className="orq-change-line">
-                      <span className="muted small">{f.label}:</span> {r.changes[f.key]}
+                      <span className="muted small">{f.label}:</span>{' '}
+                      {f.render ? f.render(r.changes[f.key]) : r.changes[f.key]}
                     </div>
                   ) : null
                 )}

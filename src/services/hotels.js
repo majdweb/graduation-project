@@ -19,4 +19,31 @@ export async function getHotels() {
   return request("/api/hotels");
 }
 
-export default { getHotels };
+export async function getHotelsAnalytics() {
+  return request("/api/admin/hotels-analytics");
+}
+
+export async function searchRooms({ checkIn, checkOut } = {}) {
+  const params = new URLSearchParams();
+  if (checkIn) params.set("checkIn", checkIn);
+  if (checkOut) params.set("checkOut", checkOut);
+  const query = params.toString();
+  return request(`/api/rooms/search${query ? `?${query}` : ""}`);
+}
+
+export async function setHotelStars(userId, stars) {
+  return request(`/api/admin/hotels/${userId}/stars`, {
+    method: 'PATCH',
+    body: JSON.stringify({ stars }),
+  });
+}
+
+export async function approveHotel(email, stars) {
+  return request('/api/admin/approve-hotel', {
+    method: 'PATCH',
+    body: JSON.stringify({ email, stars: stars || undefined }),
+  });
+}
+
+const hotelsService = { getHotels, getHotelsAnalytics, searchRooms, approveHotel };
+export default hotelsService;

@@ -1,114 +1,196 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import './room.css'
 import * as hotelsSvc from './services/hotels'
+import { getCurrentRole } from './services/auth'
 
-export default function Hotels(){
-  const navigate = useNavigate();
-  const isOwner = (() => {
-    try {
-      const raw = localStorage.getItem('mock_auth_user');
-      const parsed = raw ? JSON.parse(raw) : null;
-      return (parsed?.user?.role || localStorage.getItem('mock_auth_role')) === 'hotel_owner';
-    } catch (error) {
-      return localStorage.getItem('mock_auth_role') === 'hotel_owner';
-    }
-  })();
+const SYRIA_CITIES = [
+  'Damascus', 'Aleppo', 'Homs', 'Hama', 'Latakia', 'Tartus',
+  'Deir ez-Zor', 'Raqqa', 'Idlib', 'Daraa', 'Sweida', 'Qamishli', 'Palmyra',
+]
+
+const STAR_OPTIONS = [5, 4, 3, 2, 1]
+
+export default function Hotels() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const isOwner = getCurrentRole() === 'hotel_owner'
+
   const handleBack = () => {
-    const fallback = isOwner ? '/ownerhome' : '/';
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate(fallback, { replace: true });
-    }
-  };
+    const fallback = isOwner ? '/ownerhome' : '/'
+    if (window.history.length > 1) navigate(-1)
+    else navigate(fallback, { replace: true })
+  }
 
   const [hotelsData, setHotelsData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [filters, setFilters] = useState({ hotel: '', city: '', rating: '' })
+  const [filters, setFilters] = useState({
+    hotel: '',
+    city: location.state?.initialFilters?.city || '',
+    stars: [],
+  })
 
   useEffect(() => {
     let mounted = true
     setLoading(true)
     setError('')
     hotelsSvc.getHotels()
-      .then((data) => {
-        if (!mounted) return
-        setHotelsData(Array.isArray(data) ? data : [])
-      })
-      .catch((err) => {
-        if (!mounted) return
-        setError(err.message || 'Unable to load hotels.')
-      })
-      .finally(() => {
-        if (!mounted) return
-        setLoading(false)
-      })
-    return () => {
-      mounted = false
-    }
+      .then((data) => { if (mounted) setHotelsData(Array.isArray(data) ? data : []) })
+      .catch((err) => { if (mounted) setError(err.message || 'Unable to load hotels.') })
+      .finally(() => { if (mounted) setLoading(false) })
+    return () => { mounted = false }
   }, [])
 
+  const toggleStar = (s) => {
+    setFilters(f => ({
+      ...f,
+      stars: f.stars.includes(s) ? f.stars.filter(x => x !== s) : [...f.stars, s],
+    }))
+  }
+
+  const clearFilters = () => setFilters({ hotel: '', city: '', stars: [] })
+
+  const activeFilterCount =
+    (filters.hotel ? 1 : 0) + (filters.city ? 1 : 0) + filters.stars.length
+
   const results = hotelsData.filter(h => {
-    const nameValue = String(h.hotelName || '')
-    const cityValue = String(h.city || '')
-    const okHotel = !filters.hotel || nameValue.toLowerCase().includes(filters.hotel.toLowerCase())
-    const okCity = !filters.city || cityValue.toLowerCase().includes(filters.city.toLowerCase())
-    const okRating = !filters.rating || (h.rating && h.rating === Number(filters.rating))
-    return okHotel && okCity && okRating
+    const nameOk = !filters.hotel || String(h.hotelName || '').toLowerCase().includes(filters.hotel.toLowerCase())
+    const cityOk = !filters.city || String(h.city || '').toLowerCase() === filters.city.toLowerCase()
+    const starsOk = filters.stars.length === 0 || filters.stars.includes(Number(h.stars))
+    return nameOk && cityOk && starsOk
   })
 
   const handleSelect = (hotel) => {
-    // navigate to Rooms page with selected hotel and carry filters
-    navigate('/rooms', { state: { selectedHotel: hotel.hotelName, initialFilters: { city: hotel.city } } })
+    navigate('/rooms', { state: { selectedHotel: hotel.hotelName, hotel } })
   }
 
   return (
-    <div className="rooms-page">
-      <div className="back-wrapper">
+    <div className="sr-page">
+      {/* Top bar */}
+      <div className="sr-topbar">
         <button type="button" className="back-btn" onClick={handleBack}>← Back</button>
-      </div>
-
-      <h1 className="section-title">Search Hotels</h1>
-
-      {loading && <p style={{ textAlign: 'center', marginBottom: 20 }}>Loading hotels...</p>}
-      {error && <p style={{ textAlign: 'center', color: '#9b1c1c', marginBottom: 20 }}>{error}</p>}
-
-      <div className="filters-wrapper">
-        <div className="filters-row">
-          <input placeholder="Hotel name" value={filters.hotel} onChange={e=>setFilters({...filters, hotel: e.target.value})} />
-          <input placeholder="City" value={filters.city} onChange={e=>setFilters({...filters, city: e.target.value})} />
-          <select value={filters.rating} onChange={e=>setFilters({...filters, rating: e.target.value})}>
-            <option value="">Any rating</option>
-            <option value="5">5</option>
-            <option value="4">4</option>
-            <option value="3">3</option>
-          </select>
+        <div className="sr-topbar-center">
+          <h1 className="sr-title">Hotels in Syria</h1>
         </div>
+        <input
+          className="sr-filter-input"
+          style={{ width: 220 }}
+          placeholder="Search hotel name…"
+          value={filters.hotel}
+          onChange={e => setFilters(f => ({ ...f, hotel: e.target.value }))}
+        />
+        {activeFilterCount > 0 && (
+          <button className="sr-clear-btn" onClick={clearFilters}>
+            Clear all <span className="sr-filter-badge">{activeFilterCount}</span>
+          </button>
+        )}
       </div>
 
-      <div className="rooms-grid">
-        {results.map((h, i) => (
-          <div key={i} className="room-card snow-card">
-            {h.cardPhoto && <img className="room-img" src={h.cardPhoto} alt={h.hotelName} />}
-            <h3>{h.hotelName || 'Hotel'}</h3>
-            <p className="hotel-name">{h.city || 'City not set'}</p>
-            <p className="room-info">
-              {h.rating ? `Rating: ${h.rating}` : 'No rating yet'} •{' '}
-              {typeof h.minPrice === 'number' && typeof h.maxPrice === 'number'
-                ? `$${h.minPrice}–$${h.maxPrice}`
-                : 'Pricing not set'}
+      {loading && <p className="sr-status">Loading hotels…</p>}
+      {error && <p className="sr-status sr-error">{error}</p>}
+
+      <div className="sr-body">
+        {/* Sidebar filters */}
+        <aside className="sr-sidebar">
+          <div className="sr-sidebar-header">
+            <span className="sr-sidebar-title">Filters</span>
+            {activeFilterCount > 0 && (
+              <button className="sr-clear-btn" onClick={clearFilters}>Clear all</button>
+            )}
+          </div>
+
+          {/* City */}
+          <div className="sr-filter-section">
+            <span className="sr-filter-label">City</span>
+            <select
+              className="sr-filter-input"
+              value={filters.city}
+              onChange={e => setFilters(f => ({ ...f, city: e.target.value }))}
+            >
+              <option value="">All cities</option>
+              {SYRIA_CITIES.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Stars */}
+          <div className="sr-filter-section">
+            <span className="sr-filter-label">Stars</span>
+            <div className="sr-star-row">
+              {STAR_OPTIONS.map(s => (
+                <button
+                  key={s}
+                  className={`sr-star-btn${filters.stars.includes(s) ? ' active' : ''}`}
+                  onClick={() => toggleStar(s)}
+                >
+                  {'★'.repeat(s)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Results */}
+        <main className="sr-results">
+          {!loading && (
+            <p className="sr-count">
+              {results.length} {results.length === 1 ? 'hotel' : 'hotels'} found
             </p>
-            <button className="book-btn" onClick={()=>handleSelect(h)}>Select Hotel</button>
+          )}
+
+          {!loading && results.length === 0 && (
+            <div className="sr-empty">
+              <p style={{ fontSize: 16, color: '#6b7280', marginBottom: 8 }}>No hotels match your filters.</p>
+              <button className="sr-clear-btn-lg" onClick={clearFilters}>Clear filters</button>
+            </div>
+          )}
+
+          <div className="sr-grid">
+            {results.map((h, i) => (
+              <div
+                key={h.hotelId || h.hotelName || i}
+                className="sr-card"
+                onClick={() => handleSelect(h)}
+                style={{ cursor: 'pointer', animationDelay: `${i * 0.07}s` }}
+              >
+                {h.cardPhoto
+                  ? <img className="sr-card-img" src={h.cardPhoto} alt={h.hotelName} />
+                  : <div className="sr-card-img-placeholder" />
+                }
+                <div className="sr-card-body">
+                  <h3 className="sr-card-name">{h.hotelName || 'Hotel'}</h3>
+                  <p className="sr-card-hotel">📍 {h.city || 'City not set'}</p>
+                  {h.stars ? (
+                    <p className="sr-card-stars">
+                      {'★'.repeat(Number(h.stars))}{'☆'.repeat(5 - Number(h.stars))}
+                    </p>
+                  ) : null}
+                  <div className="sr-card-footer">
+                    <p className="sr-card-price">
+                      {typeof h.minPrice === 'number' && typeof h.maxPrice === 'number' ? (
+                        <>
+                          <span className="sr-price-amount">${h.minPrice}–${h.maxPrice}</span>
+                          <span className="sr-price-night"> / night</span>
+                        </>
+                      ) : (
+                        <span className="sr-price-night">Pricing not set</span>
+                      )}
+                    </p>
+                    <button
+                      className="sr-book-btn"
+                      onClick={e => { e.stopPropagation(); handleSelect(h) }}
+                    >
+                      View Rooms
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-        {!loading && results.length === 0 && (
-          <div className="empty-state">
-            <p>No hotels found.</p>
-          </div>
-        )}
+        </main>
       </div>
     </div>
   )

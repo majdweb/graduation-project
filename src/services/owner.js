@@ -96,5 +96,9 @@ export async function createRoom(hotelId, payload) {
   return request(`/api/owner/${hotelId}/rooms`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
-const ownerService = { getBilling, getRevenueStats, getMetrics, getRooms, getReservations, getSettings, getHotelProfile, updateHotelProfile, updateSettings, acceptReservation, rejectReservation, createReservation, toggleCampaign, updateCancelPolicy, updateRoom, deleteRoom, getUploadUrls, createRoom };
+export async function getHotelReviews(hotelId) {
+  return request(`/api/owner/${hotelId}/reviews`);
+}
+
+const ownerService = { getBilling, getRevenueStats, getMetrics, getRooms, getReservations, getSettings, getHotelProfile, updateHotelProfile, updateSettings, acceptReservation, rejectReservation, createReservation, toggleCampaign, updateCancelPolicy, updateRoom, deleteRoom, getUploadUrls, createRoom, getHotelReviews };
 export default ownerService;

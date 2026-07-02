@@ -62,3 +62,26 @@ export async function verifySignUpCode({ email, code }) {
 
   return data;
 }
+
+// Reads the locally-stored session set by signInUser/Login.js.
+export function getCurrentUser() {
+  try {
+    const raw = localStorage.getItem("mock_auth_user");
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed?.user || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+export function getCurrentRole() {
+  return getCurrentUser()?.role || localStorage.getItem("mock_auth_role") || null;
+}
+
+export function clearAuth() {
+  try {
+    localStorage.removeItem("mock_auth_user");
+    localStorage.removeItem("mock_auth_role");
+    localStorage.removeItem("mock_auth_token");
+  } catch (error) { /* ignore */ }
+}

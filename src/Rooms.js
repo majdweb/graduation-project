@@ -1,371 +1,384 @@
-﻿import React, {
-  useState
-} from 'react'
-import {
-  Link,
-  useLocation,
-  useNavigate
-} from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import './room.css'
+import { searchRooms } from './services/hotels'
+import { getRoomReviews } from './services/guest'
+import { getCurrentRole } from './services/auth'
+import PriceRangeSlider from './PriceRangeSlider'
+
+const CAT_LABELS = {
+  staff: 'Staff', location: 'Location', facilities: 'Facilities',
+  cleanliness: 'Cleanliness', comfort: 'Comfort', value: 'Value',
+}
+
+const SCORE_OPTIONS = [
+  { label: 'Any', value: 0 },
+  { label: '6+', value: 6 },
+  { label: '7+', value: 7 },
+  { label: '8+', value: 8 },
+  { label: '9+', value: 9 },
+]
+
+const SORT_OPTIONS = [
+  { value: 'recommended', label: 'Recommended' },
+  { value: 'price_asc',   label: 'Price: Low → High' },
+  { value: 'price_desc',  label: 'Price: High → Low' },
+  { value: 'score_desc',  label: 'Review Score' },
+]
+
+function ReviewsModal({ room, onClose }) {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getRoomReviews(room.id)
+      .then(setData)
+      .catch(() => setData(null))
+      .finally(() => setLoading(false))
+  }, [room.id])
+
+  return (
+    <div className="rv-overlay" onClick={onClose}>
+      <div className="rvv-modal" onClick={e => e.stopPropagation()}>
+        <div className="rv-modal-header">
+          <div>
+            <h3>{room.name}</h3>
+            <p>{room.hotelName} · {room.city}</p>
+            {data && data.reviewCount > 0 && (
+              <p style={{ marginTop: 4 }}>
+                <span className="rvv-avg">{data.avgScore}</span>
+                <span className="rvv-count">/ 10 · {data.reviewCount} review{data.reviewCount !== 1 ? 's' : ''}</span>
+              </p>
+            )}
+          </div>
+          <button className="rv-close" onClick={onClose} aria-label="Close">×</button>
+        </div>
+
+        {loading && <p style={{ color: '#6b7280' }}>Loading reviews…</p>}
+
+        {!loading && data?.categoryAverages && (
+          <div className="rvv-cats">
+            {Object.entries(CAT_LABELS).map(([key, label]) => (
+              <div key={key} className="rvv-cat-pill">
+                <span>{label}</span>
+                <span>{data.categoryAverages[key]}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && data && (
+          <div className="rvv-list">
+            {data.reviews.length === 0 && <p style={{ color: '#9ca3af' }}>No reviews yet.</p>}
+            {data.reviews.map(r => (
+              <div key={r.id} className="rvv-item">
+                <div className="rvv-item-header">
+                  <span className="rvv-item-name">{r.guestName}</span>
+                  <span className="rvv-item-score">{r.overallScore}/10</span>
+                  <span className="rvv-item-date">{new Date(r.createdAt).toLocaleDateString()}</span>
+                </div>
+                <p className="rvv-item-comment">{r.comment}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default function Rooms() {
-  const [rooms] = useState([{
-      id: 1,
-      name: 'Deluxe King Room',
-      hotel: 'Blue Horizon Hotel',
-      city: 'Paris',
-      price: 120,
-      rating: 5,
-      img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=80',
-    },
-    {
-      id: 2,
-      name: 'Modern Suite',
-      hotel: 'Royal Stay',
-      city: 'London',
-      price: 180,
-      rating: 4,
-      img: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80',
-    },
-    {
-      id: 3,
-      name: 'Cozy Double Room',
-      hotel: 'Sunset Inn',
-      city: 'Rome',
-      price: 90,
-      rating: 4,
-      img: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=80',
-    },
-    {
-      id: 4,
-      name: 'Luxury Suite',
-      hotel: 'Velvet Palace',
-      city: 'Dubai',
-      price: 250,
-      rating: 5,
-      img: 'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=900&q=80',
-    },
-  ])
-
-  const [recommended] = useState([{
-      id: 101,
-      name: 'Premium Sea View',
-      hotel: 'Ocean Breeze Resort',
-      price: 200,
-      rating: 5,
-      img: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=900&q=80',
-    },
-    {
-      id: 102,
-      name: 'Executive Suite',
-      hotel: 'Grand Palace',
-      price: 260,
-      rating: 5,
-      img: 'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?auto=format&fit=crop&w=900&q=80',
-    },
-    {
-      id: 103,
-      name: 'Romantic Getaway',
-      hotel: 'Velvet Rose Hotel',
-      price: 180,
-      rating: 4,
-      img: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=80',
-    },
-  ])
-
   const location = useLocation()
   const navigate = useNavigate()
-  const isOwner = (() => {
-    try {
-      const raw = localStorage.getItem('mock_auth_user')
-      const parsed = raw ? JSON.parse(raw) : null
-      return (parsed?.user?.role || localStorage.getItem('mock_auth_role')) === 'hotel_owner'
-    } catch (error) {
-      return localStorage.getItem('mock_auth_role') === 'hotel_owner'
-    }
-  })()
-  const handleBack = () => {
-    const fallback = isOwner ? '/ownerhome' : '/'
-    if (window.history.length > 1) {
-      navigate(-1)
-    } else {
-      navigate(fallback, { replace: true })
-    }
-  }
+  const isOwner = getCurrentRole() === 'hotel_owner'
+
   const incoming = location.state || {}
   const selectedHotel = incoming.selectedHotel || ''
+  const hotel = incoming.hotel || null
+  const checkIn  = incoming.checkIn  || ''
+  const checkOut = incoming.checkOut || ''
 
-  const [filters, setFilters] = useState({
-    roomName: '',
-    checkIn: incoming.checkIn || '',
-    checkOut: incoming.checkOut || '',
-  })
-
-  const [priceRange, setPriceRange] = useState([0, 300])
-
-  const handleMin = (e) => {
-    const v = Number(e.target.value)
-    if (v <= priceRange[1]) setPriceRange([v, priceRange[1]])
+  const handleBack = () => {
+    const fallback = isOwner ? '/ownerhome' : '/hotels'
+    if (window.history.length > 1) navigate(-1)
+    else navigate(fallback, { replace: true })
   }
 
-  const handleMax = (e) => {
-    const v = Number(e.target.value)
-    if (v >= priceRange[0]) setPriceRange([priceRange[0], v])
+  const [allRooms, setAllRooms] = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState('')
+  const [reviewsRoom, setReviewsRoom] = useState(null)
+
+  // Filters
+  const [roomName, setRoomName]     = useState('')
+  const [guests, setGuests]         = useState(incoming.guests || 1)
+  const [priceMin, setPriceMin]     = useState(null)   // null = no filter
+  const [priceMax, setPriceMax]     = useState(null)   // null = no filter
+  const [minScore, setMinScore]     = useState(0)
+  const [sortBy, setSortBy]         = useState('recommended')
+
+  // Guard: redirect to /hotels if no hotel was selected (e.g. direct URL navigation)
+  useEffect(() => {
+    if (!selectedHotel) navigate('/hotels', { replace: true })
+  }, [selectedHotel, navigate])
+
+  useEffect(() => {
+    let mounted = true
+    setLoading(true)
+    setError('')
+    searchRooms({ checkIn, checkOut })
+      .then(data  => { if (mounted) setAllRooms(Array.isArray(data) ? data : []) })
+      .catch(err  => { if (mounted) setError(err.message || 'Unable to load rooms.') })
+      .finally(() => { if (mounted) setLoading(false) })
+    return () => { mounted = false }
+  }, [checkIn, checkOut])
+
+  // Rooms that belong to this hotel
+  const hotelKey = String(
+    hotel?.hotelId || hotel?.hotelName || selectedHotel || ''
+  ).trim().toLowerCase()
+
+  const hotelRooms = useMemo(() =>
+    allRooms.filter(r =>
+      String(r.hotelId || '').toLowerCase() === hotelKey ||
+      String(r.hotelName || '').toLowerCase() === hotelKey
+    ),
+    [allRooms, hotelKey]
+  )
+
+  const maxPrice = useMemo(() => {
+    if (!hotelRooms.length) return 1000
+    return Math.ceil(Math.max(...hotelRooms.map(r => r.price)) / 100) * 100
+  }, [hotelRooms])
+
+  const activeFilterCount = useMemo(() => {
+    let n = 0
+    if (roomName)            n++
+    if (priceMin !== null)   n++
+    if (priceMax !== null)   n++
+    if (minScore)            n++
+    if (guests > 1)          n++
+    return n
+  }, [roomName, priceMin, priceMax, minScore, guests])
+
+  const clearFilters = () => {
+    setRoomName('')
+    setPriceMin(null)
+    setPriceMax(null)
+    setMinScore(0)
+    setGuests(1)
+    setSortBy('recommended')
   }
 
-  const filteredRooms = rooms.filter((room) => {
-    const matchesHotel = selectedHotel ?
-      room.hotel.toLowerCase() === selectedHotel.toLowerCase() :
-      true
+  const results = useMemo(() => {
+    let filtered = hotelRooms.filter(r => {
+      const okName    = !roomName || String(r.name || '').toLowerCase().includes(roomName.toLowerCase())
+      const okGuests  = !guests || r.capacity >= Number(guests)
+      const okPrMin   = priceMin === null || r.price >= priceMin
+      const okPrMax   = priceMax === null || r.price <= priceMax
+      const okScore   = minScore === 0 || (r.avgScore !== null && r.avgScore >= minScore)
+      return okName && okGuests && okPrMin && okPrMax && okScore
+    })
 
-    const matchesRoomName =
-      filters.roomName === '' ||
-      room.name.toLowerCase().includes(filters.roomName.toLowerCase())
+    if (sortBy === 'price_asc')  filtered.sort((a, b) => a.price - b.price)
+    if (sortBy === 'price_desc') filtered.sort((a, b) => b.price - a.price)
+    if (sortBy === 'score_desc') filtered.sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0))
 
-    const matchesPrice = room.price >= priceRange[0] && room.price <= priceRange[1]
+    return filtered
+  }, [hotelRooms, roomName, guests, priceMin, priceMax, minScore, sortBy])
 
-    return matchesHotel && matchesRoomName && matchesPrice
-  })
+  const handleBook = (room) => {
+    navigate('/reservation', {
+      state: {
+        room: {
+          id: room.id, hotelId: room.hotelId, name: room.name,
+          hotel: room.hotelName, city: room.city, price: room.price,
+          rating: room.hotelStars, img: room.photos?.[0],
+          capacity: room.capacity, amount: room.amount,
+        },
+        checkIn, checkOut, guests,
+      },
+    })
+  }
 
-  return ( <
-    div className = "rooms-page" >
-    <
-    div className = "back-wrapper" >
-    <
-    button type = "button"
-    className = "back-btn"
-    onClick = { handleBack } > ←Back < /button> <
-    /div>
+  const hotelStars = hotel?.stars || (hotelRooms[0]?.hotelStars ?? null)
+  const hotelCity  = hotel?.city  || (hotelRooms[0]?.city ?? '')
 
-    <
-    h2 className = "section-title" > Recommended Rooms < /h2>
+  return (
+    <div className="sr-page">
+      {/* Top bar */}
+      <div className="sr-topbar">
+        <button type="button" className="back-btn" onClick={handleBack}>← Back</button>
+        <div className="sr-topbar-center">
+          <h1 className="sr-title">
+            {selectedHotel ? `Rooms at ${selectedHotel}` : 'Available Rooms'}
+          </h1>
+          {hotelCity && (
+            <span className="sr-dates">
+              📍 {hotelCity}
+              {hotelStars ? `  ·  ${'★'.repeat(hotelStars)}` : ''}
+            </span>
+          )}
+        </div>
+        <input
+          className="sr-filter-input"
+          style={{ width: 200 }}
+          placeholder="Search room name…"
+          value={roomName}
+          onChange={e => setRoomName(e.target.value)}
+        />
+        {activeFilterCount > 0 && (
+          <button className="sr-clear-btn" onClick={clearFilters}>
+            Clear all <span className="sr-filter-badge">{activeFilterCount}</span>
+          </button>
+        )}
+      </div>
 
-    <
-    div className = "recommended-grid" > {
-      recommended.map((room) => ( <
-        div className = "recommended-card snow-card"
-        key = {
-          room.id
-        } >
-        <
-        img src = {
-          room.img
-        }
-        className = "recommended-img"
-        alt = {
-          room.name
-        }
-        /> <
-        h3 > {
-          room.name
-        } < /h3> <
-        p className = "hotel-name" > {
-          room.hotel
-        } < /p> <
-        div className = "room-info" >
-        <
-        span className = "price" > $ {
-          room.price
-        }
-        /night</span >
-        <
-        span className = "stars" > {
-          '★'.repeat(room.rating)
-        } < /span> <
-        /div> <
-        Link to = "/reservation"
-        state = {
-          {
-            room
-          }
-        }
-        className = "book-btn" >
-        Book Now <
-        /Link> <
-        /div>
-      ))
-    } <
-    /div>
+      {loading && <p className="sr-status">Loading rooms…</p>}
+      {error   && <p className="sr-status sr-error">{error}</p>}
 
-    <
-    div className = "rooms-header-row" >
-    <
-    h1 className = "section-title" > {
-      selectedHotel ? `Available Rooms at ${selectedHotel}` : 'Available Rooms'
-    } <
-    /h1> {
-      selectedHotel && ( <
-        button className = "secondary-btn"
-        onClick = {
-          () => navigate('/hotels')
-        } >
-        Change Hotel <
-        /button>
-      )
-    } <
-    /div>
+      <div className="sr-body">
+        {/* Sidebar */}
+        <aside className="sr-sidebar">
+          <div className="sr-sidebar-header">
+            <span className="sr-sidebar-title">Filters</span>
+            {activeFilterCount > 0 && (
+              <button className="sr-clear-btn" onClick={clearFilters}>Clear all</button>
+            )}
+          </div>
 
-    <
-    div className = "filters-wrapper" >
-    <
-    div className = "filters-row" > {
-      selectedHotel && ( <
-        div className = "selected-hotel" >
-        Selected hotel: < strong > {
-          selectedHotel
-        } < /strong> <
-        /div>
-      )
-    } <
-    input type = "text"
-    placeholder = "Room Name"
-    value = {
-      filters.roomName
-    }
-    onChange = {
-      (e) => setFilters({
-        ...filters,
-        roomName: e.target.value
-      })
-    }
-    /> <
-    /div>
+          {/* Guests */}
+          <div className="sr-filter-section">
+            <label className="sr-filter-label">Guests</label>
+            <input
+              className="sr-filter-input"
+              type="number"
+              min={1}
+              value={guests}
+              onChange={e => setGuests(Number(e.target.value) || 1)}
+            />
+          </div>
 
-    <
-    div className = "filters-row advanced-row" >
-    <
-    div className = "simple-range" >
-    <
-    h3 > Price Range < /h3> <
-    input type = "range"
-    min = "0"
-    max = "300"
-    value = {
-      priceRange[0]
-    }
-    onChange = {
-      handleMin
-    }
-    /> <
-    input type = "range"
-    min = "0"
-    max = "300"
-    value = {
-      priceRange[1]
-    }
-    onChange = {
-      handleMax
-    }
-    /> <
-    div className = "simple-values" >
-    <
-    span > $ {
-      priceRange[0]
-    } < /span> <
-    span > $ {
-      priceRange[1]
-    } < /span> <
-    /div> <
-    /div>
+          {/* Sort */}
+          <div className="sr-filter-section">
+            <label className="sr-filter-label">Sort by</label>
+            <div className="sr-sort-list">
+              {SORT_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  className={`sr-sort-btn${sortBy === opt.value ? ' active' : ''}`}
+                  onClick={() => setSortBy(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-    <
-    div className = "date-fields" >
-    <
-    label >
-    Check In <
-    input type = "date"
-    value = {
-      filters.checkIn
-    }
-    onChange = {
-      (e) => setFilters({
-        ...filters,
-        checkIn: e.target.value
-      })
-    }
-    /> <
-    /label> <
-    label >
-    Check Out <
-    input type = "date"
-    value = {
-      filters.checkOut
-    }
-    onChange = {
-      (e) => setFilters({
-        ...filters,
-        checkOut: e.target.value
-      })
-    }
-    /> <
-    /label> <
-    /div> <
-    /div> <
-    /div>
+          {/* Price */}
+          <div className="sr-filter-section">
+            <label className="sr-filter-label">Price per night</label>
+            <PriceRangeSlider
+              min={0}
+              max={maxPrice}
+              valueMin={priceMin ?? 0}
+              valueMax={priceMax ?? maxPrice}
+              disabled={loading}
+              onChange={({ min: lo, max: hi }) => {
+                setPriceMin(lo > 0 ? lo : null)
+                setPriceMax(hi < maxPrice ? hi : null)
+              }}
+            />
+          </div>
 
-    <
-    div className = "rooms-grid" > {
-      filteredRooms.length > 0 ? (
-        filteredRooms.map((room) => ( <
-          div className = "room-card snow-card"
-          key = {
-            room.id
-          } >
-          <
-          img src = {
-            room.img
-          }
-          className = "room-img"
-          alt = {
-            room.name
-          }
-          /> <
-          h3 > {
-            room.name
-          } < /h3> <
-          p className = "hotel-name" > {
-            room.hotel
-          } < /p> <
-          p className = "city" > {
-            room.city
-          } < /p> <
-          div className = "room-info" >
-          <
-          span className = "price" > $ {
-            room.price
-          }
-          /night</span >
-          <
-          span className = "stars" > {
-            '★'.repeat(room.rating)
-          } < /span> <
-          /div> <
-          Link to = "/reservation"
-          state = {
-            {
-              room
-            }
-          }
-          className = "book-btn" >
-          Book Now <
-          /Link> <
-          /div>
-        ))
-      ) : ( <
-        div className = "empty-state" >
-        <
-        p > No rooms found
-        for this hotel and filters. < /p> <
-        button className = "secondary-btn"
-        onClick = {
-          () => navigate('/hotels')
-        } >
-        Choose another hotel <
-        /button> <
-        /div>
-      )
-    } <
-    /div> <
-    /div>
+          {/* Review Score */}
+          <div className="sr-filter-section">
+            <label className="sr-filter-label">Guest Review Score</label>
+            <div className="sr-score-row">
+              {SCORE_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  className={`sr-score-btn${minScore === opt.value ? ' active' : ''}`}
+                  onClick={() => setMinScore(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Results */}
+        <main className="sr-results">
+          {!loading && (
+            <p className="sr-count">
+              {results.length} {results.length === 1 ? 'room' : 'rooms'} found
+              {guests > 1 && <> · {guests} guests</>}
+            </p>
+          )}
+
+          <div className="sr-grid">
+            {results.map(room => (
+              <div key={room.id} className="sr-card">
+                {room.photos?.[0]
+                  ? <img className="sr-card-img" src={room.photos[0]} alt={room.name} />
+                  : <div className="sr-card-img-placeholder" />
+                }
+                <div className="sr-card-body">
+                  <h3 className="sr-card-name">{room.name}</h3>
+
+                  {room.reviewCount > 0 ? (
+                    <button className="rv-badge" onClick={() => setReviewsRoom(room)}>
+                      ★ {room.avgScore}/10 · {room.reviewCount} review{room.reviewCount !== 1 ? 's' : ''}
+                    </button>
+                  ) : (
+                    <p className="sr-card-no-reviews">No reviews yet</p>
+                  )}
+
+                  <div className="sr-card-footer">
+                    <p className="sr-card-price">
+                      <span className="sr-price-amount">${room.price}</span>
+                      <span className="sr-price-night"> / night</span>
+                      <span className="sr-capacity"> · Sleeps {room.capacity}</span>
+                    </p>
+                    <button className="sr-book-btn" onClick={() => handleBook(room)}>Book Now</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {!loading && !error && results.length === 0 && (
+            <div className="sr-empty">
+              {hotelRooms.length === 0 ? (
+                <>
+                  <p style={{ fontSize: 40, marginBottom: 8 }}>🏨</p>
+                  <p style={{ fontWeight: 700, fontSize: 18, color: '#1a2340' }}>No rooms listed yet</p>
+                  <p style={{ color: '#6b7280', marginTop: 4 }}>This hotel hasn't added any rooms.</p>
+                  <button className="sr-clear-btn-lg" onClick={() => navigate('/hotels')} style={{ marginTop: 16 }}>
+                    Browse other hotels
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: 40, marginBottom: 8 }}>🔍</p>
+                  <p style={{ fontWeight: 700, fontSize: 18, color: '#1a2340' }}>No rooms match your filters</p>
+                  <p style={{ color: '#6b7280', marginTop: 4 }}>Try adjusting or clearing your filters.</p>
+                  {activeFilterCount > 0 && (
+                    <button className="sr-clear-btn-lg" onClick={clearFilters} style={{ marginTop: 16 }}>
+                      Clear all filters
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </main>
+      </div>
+
+      {reviewsRoom && (
+        <ReviewsModal room={reviewsRoom} onClose={() => setReviewsRoom(null)} />
+      )}
+    </div>
   )
 }

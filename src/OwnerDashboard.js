@@ -2,6 +2,9 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./ownerDashboard.css";
 import * as ownerSvc from "./services/owner";
+import { getCurrentUser } from "./services/auth";
+
+const CAT_LABELS = { staff: 'Staff', location: 'Location', facilities: 'Facilities', cleanliness: 'Cleanliness', comfort: 'Comfort', value: 'Value' };
 
 function toDate(value) {
   return new Date(`${value}T00:00:00`);
@@ -62,14 +65,8 @@ export default function OwnerDashboard() {
     const envHotelId = process.env.REACT_APP_HOTEL_ID;
     if (envHotelId) return envHotelId;
 
-    try {
-      const raw = localStorage.getItem('mock_auth_user');
-      const parsed = raw ? JSON.parse(raw) : null;
-      const user = parsed?.user || {};
-      return String(user.hotelId || user.hotelName || user.id || 1);
-    } catch (error) {
-      return '1';
-    }
+    const user = getCurrentUser() || {};
+    return String(user.hotelId || user.hotelName || user.id || 1);
   }, []);
 
   const [bills, setBills] = useState(null);
@@ -78,6 +75,8 @@ export default function OwnerDashboard() {
   const [rooms, setRooms] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [cancelPolicy, setCancelPolicy] = useState({ freeCancel: true, daysBefore: 2 });
+  const [breakfastAvailable, setBreakfastAvailable] = useState(false);
+  const [breakfastPrice, setBreakfastPrice] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [campaignModalOpen, setCampaignModalOpen] = useState(false);
@@ -108,6 +107,7 @@ export default function OwnerDashboard() {
     }
   });
   const [autoAcceptBookings, setAutoAcceptBookings] = useState(true);
+  const [hotelReviews, setHotelReviews] = useState(null);
 
   const net = useMemo(() => (bills ? bills.gross * (1 - bills.platformCutPercent / 100) : 0), [bills]);
   const campaignEndDate = useMemo(() => {
@@ -136,7 +136,11 @@ export default function OwnerDashboard() {
 
   const selectedDayInfo = useMemo(() => {
     if (!selectedCalendarDay) return null;
-    const dayReservations = reservations.filter((reservation) => overlapsReservation(selectedCalendarDay, reservation));
+    // Include checkout-day reservations so departures appear in the modal
+    const dayReservations = reservations.filter((reservation) =>
+      (reservation.status === 'confirmed' || reservation.status === 'pending') &&
+      (overlapsReservation(selectedCalendarDay, reservation) || sameDay(selectedCalendarDay, toDate(reservation.checkOut)))
+    );
     const checkIns = [];
     const checkOuts = [];
     const inHouse = [];
@@ -164,20 +168,31 @@ export default function OwnerDashboard() {
       inHouse.push(reservation);
     });
 
-    const occupiedUnitsByRoomId = dayReservations.reduce((acc, reservation) => {
-      const roomKey = String(reservation.roomId || '');
-      if (!roomKey) return acc;
-      acc[roomKey] = (acc[roomKey] || 0) + 1;
-      return acc;
-    }, {});
+    // Occupancy only counts reservations that truly overlap (checking-out guests have left)
+    const occupiedUnitsByRoomId = reservations
+      .filter(r => (r.status === 'confirmed' || r.status === 'pending') && overlapsReservation(selectedCalendarDay, r))
+      .reduce((acc, reservation) => {
+        const roomKey = String(reservation.roomId || '');
+        if (!roomKey) return acc;
+        acc[roomKey] = (acc[roomKey] || 0) + 1;
+        return acc;
+      }, {});
     const availableRoomCount = rooms.reduce((total, room) => {
       if (room.bookable === false) return total;
-      const totalUnits = Math.max(0, Number(room.amount) || 1);
+      const variantUnits = Array.isArray(room.variants)
+        ? room.variants.filter(v => v.name && v.name.trim()).reduce((s, v) => s + (Number(v.amount) || 0), 0)
+        : 0;
+      const totalUnits = Math.max(0, Number(room.amount) || 0) + variantUnits;
       const occupiedUnits = occupiedUnitsByRoomId[String(room.id)] || 0;
       return total + Math.max(0, totalUnits - occupiedUnits);
     }, 0);
     const blockedRooms = rooms.filter((room) => room.bookable === false);
-    const blockedRoomCount = blockedRooms.reduce((total, room) => total + Math.max(0, Number(room.amount) || 1), 0);
+    const blockedRoomCount = blockedRooms.reduce((total, room) => {
+      const variantUnits = Array.isArray(room.variants)
+        ? room.variants.filter(v => v.name && v.name.trim()).reduce((s, v) => s + (Number(v.amount) || 0), 0)
+        : 0;
+      return total + Math.max(0, Number(room.amount) || 0) + variantUnits;
+    }, 0);
     const occupiedRoomCount = Object.values(occupiedUnitsByRoomId).reduce((sum, count) => sum + count, 0);
 
     return {
@@ -250,7 +265,7 @@ export default function OwnerDashboard() {
     setRoomCapacity(r.capacity || 1);
     setRoomPrice(r.price || 0);
     setRoomStatus(r.status || 'draft');
-    setVariants(Array.isArray(r.variants) ? r.variants.map(v => ({ name: v.name || '', priceDelta: v.priceDelta || 0, capacity: v.capacity || 1 })) : []);
+    setVariants(Array.isArray(r.variants) ? r.variants.map(v => ({ name: v.name || '', amount: Number(v.amount) || Number(v.capacity) || 1, price: Number(v.price) || Number(v.priceDelta) || 0 })) : []);
     setAddRoomOpen(true);
   }
 
@@ -294,7 +309,7 @@ export default function OwnerDashboard() {
   }
 
   function addVariant() {
-    setVariants(v => [...v, { name: '', priceDelta: 0, capacity: 1 }]);
+    setVariants(v => [...v, { name: '', amount: 1, price: 0 }]);
   }
 
   function updateVariant(idx, field, value) {
@@ -338,7 +353,7 @@ export default function OwnerDashboard() {
         amount: Number(roomAmount) || 1,
         capacity: Number(roomCapacity) || 1,
         price: Number(roomPrice) || 0,
-        variants: variants.map(v => ({ name: v.name, priceDelta: Number(v.priceDelta) || 0, capacity: Number(v.capacity) || 1 })),
+        variants: variants.map(v => ({ name: v.name, amount: Number(v.amount) || 1, price: Number(v.price) || 0 })),
         photos: photoUrls,
         status: selectedRoomId ? roomStatus : 'draft'
       };
@@ -404,12 +419,13 @@ export default function OwnerDashboard() {
       setLoading(true);
       setError(null);
       try {
-        const [b, m, r, res, settings] = await Promise.all([
+        const [b, m, r, res, settings, rv] = await Promise.all([
           ownerSvc.getBilling(hotelId).catch(() => null),
           ownerSvc.getMetrics(hotelId).catch(() => null),
           ownerSvc.getRooms(hotelId).catch(() => null),
           ownerSvc.getReservations(hotelId).catch(() => null),
           ownerSvc.getSettings(hotelId).catch(() => null),
+          ownerSvc.getHotelReviews(hotelId).catch(() => null),
         ]);
         if (!mounted) return;
         if (b) setBills(b); else setBills({ gross: 0, platformCutPercent: 0 });
@@ -417,7 +433,18 @@ export default function OwnerDashboard() {
         if (r) setRooms(r); else setRooms([]);
         setCampaignActive(Boolean(m?.campaignActive));
         if (res) setReservations(res); else setReservations([]);
+        if (rv) setHotelReviews(rv);
         if (settings && typeof settings.autoAcceptBookings !== 'undefined') setAutoAcceptBookings(Boolean(settings.autoAcceptBookings));
+        if (settings?.cancelPolicy) {
+          setCancelPolicy({
+            freeCancel: Boolean(settings.cancelPolicy.freeCancel),
+            daysBefore: Number(settings.cancelPolicy.daysBefore) || 0,
+          });
+        }
+        if (settings?.breakfast) {
+          setBreakfastAvailable(Boolean(settings.breakfast.available));
+          setBreakfastPrice(Number(settings.breakfast.price) || 0);
+        }
       } catch (err) {
         if (!mounted) return;
         setError(err.message || 'Failed to load data');
@@ -472,6 +499,12 @@ export default function OwnerDashboard() {
           </Link>
         </div>
         <p className="muted">Overview of your hotel's performance and settings</p>
+        {(() => { const s = Number(getCurrentUser()?.stars) || 0; return s > 0 ? (
+          <p style={{ margin: '4px 0 0', fontSize: 22, color: '#f59e0b', letterSpacing: 3 }}>
+            {'★'.repeat(s)}{'☆'.repeat(5 - s)}
+            <span style={{ fontSize: 13, color: '#6b7280', letterSpacing: 0, marginLeft: 8 }}>{s}-star hotel</span>
+          </p>
+        ) : null; })()}
       </header>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -551,7 +584,9 @@ export default function OwnerDashboard() {
         <h2>Performance vs Similar Hotels</h2>
         <div className="compare-row">
           <div>Star level</div>
-          <div className="compare-value">{metrics?.stars ?? '—'}★</div>
+          <div className="compare-value" style={{ color: '#f59e0b', letterSpacing: 2 }}>
+            {metrics?.stars ? '★'.repeat(metrics.stars) + '☆'.repeat(5 - metrics.stars) : '—'}
+          </div>
           <div>Avg price in category</div>
           <div className={`compare-tag ${priceComparison.color}`}>{priceComparison.label}</div>
         </div>
@@ -578,7 +613,9 @@ export default function OwnerDashboard() {
 
         <div className="calendar-grid calendar-days">
           {calendarDays.map((day) => {
-            const dayReservations = reservations.filter((reservation) => overlapsReservation(day, reservation));
+            const dayReservations = reservations.filter((reservation) =>
+              overlapsReservation(day, reservation) || sameDay(day, toDate(reservation.checkOut))
+            );
             const isCurrentMonth = day.getMonth() === calendarMonth.getMonth();
             const isToday = sameDay(day, new Date());
             return (
@@ -618,6 +655,11 @@ export default function OwnerDashboard() {
             calendarReservations.map((reservation) => (
               <div key={reservation.id} className="calendar-list-item">
                 <strong>{reservation.guestName}</strong>
+                {(reservation.guestEmail || reservation.guestPhone) && (
+                  <span className="muted small">
+                    {[reservation.guestEmail, reservation.guestPhone].filter(Boolean).join(' · ')}
+                  </span>
+                )}
                 <span>{reservation.roomName}</span>
                 <span>{reservation.checkIn} → {reservation.checkOut}</span>
                 <span className={`calendar-badge ${reservation.status}`}>{reservation.status}</span>
@@ -634,6 +676,11 @@ export default function OwnerDashboard() {
               <div key={`pending-${reservation.id}`} className="pending-row" style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
                 <div style={{ flex: 1 }}>
                   <strong>{reservation.guestName}</strong>
+                  {(reservation.guestEmail || reservation.guestPhone) && (
+                    <div className="muted small">
+                      {[reservation.guestEmail, reservation.guestPhone].filter(Boolean).join(' · ')}
+                    </div>
+                  )}
                   <div className="muted small">{reservation.roomName || `Room ${reservation.roomId}`} — {reservation.checkIn} → {reservation.checkOut}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -735,7 +782,12 @@ export default function OwnerDashboard() {
               )}
               <div className="room-card-body">
                 <div className="room-name">{r.name}</div>
-                <div className="muted small">${r.price} / night • {r.stars}★</div>
+                <div className="muted small">${r.price} / night</div>
+                {r.reviewCount > 0 && (
+                  <div className="muted small" style={{ marginTop: 2, color: '#2a3d66', fontWeight: 600 }}>
+                    ★ {r.avgScore}/10 · {r.reviewCount} review{r.reviewCount !== 1 ? 's' : ''}
+                  </div>
+                )}
               </div>
               <div className="room-actions">
                 <button onClick={async () => {
@@ -750,6 +802,60 @@ export default function OwnerDashboard() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="od-row">
+        <h2>Guest Reviews</h2>
+        {!hotelReviews || hotelReviews.reviewCount === 0 ? (
+          <p className="muted small">No guest reviews yet. Reviews appear here after guests check out and submit their ratings.</p>
+        ) : (
+          <>
+            <div style={{ marginBottom: 16 }}>
+              <span style={{ fontSize: 28, fontWeight: 800, color: '#2a3d66' }}>{hotelReviews.avgScore}</span>
+              <span style={{ fontSize: 14, color: '#6b7280', marginLeft: 8 }}>/ 10 overall · {hotelReviews.reviewCount} review{hotelReviews.reviewCount !== 1 ? 's' : ''}</span>
+            </div>
+            {hotelReviews.categoryAverages && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+                {Object.entries(CAT_LABELS).map(([key, label]) => (
+                  <div key={key} style={{ background: '#f3f4f6', borderRadius: 8, padding: '6px 12px', textAlign: 'center', minWidth: 90 }}>
+                    <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 2 }}>{label}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: '#1a2340' }}>{hotelReviews.categoryAverages[key]}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+                    <th style={{ textAlign: 'left', padding: '6px 10px', color: '#6b7280', fontWeight: 600 }}>Room</th>
+                    <th style={{ textAlign: 'left', padding: '6px 10px', color: '#6b7280', fontWeight: 600 }}>Guest</th>
+                    <th style={{ textAlign: 'center', padding: '6px 10px', color: '#6b7280', fontWeight: 600 }}>Score</th>
+                    <th style={{ textAlign: 'left', padding: '6px 10px', color: '#6b7280', fontWeight: 600 }}>Comment</th>
+                    <th style={{ textAlign: 'right', padding: '6px 10px', color: '#6b7280', fontWeight: 600 }}>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {hotelReviews.reviews.map((r) => (
+                    <tr key={r.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                      <td style={{ padding: '8px 10px', fontWeight: 500 }}>{r.roomName}</td>
+                      <td style={{ padding: '8px 10px' }}>{r.guestName}</td>
+                      <td style={{ padding: '8px 10px', textAlign: 'center' }}>
+                        <span style={{ background: '#2a3d66', color: '#fff', borderRadius: 6, padding: '2px 8px', fontSize: 13, fontWeight: 700 }}>{r.overallScore}/10</span>
+                      </td>
+                      <td style={{ padding: '8px 10px', color: '#374151', maxWidth: 300 }}>
+                        {r.comment.length > 80 ? r.comment.slice(0, 80) + '…' : r.comment}
+                      </td>
+                      <td style={{ padding: '8px 10px', textAlign: 'right', color: '#9ca3af', whiteSpace: 'nowrap' }}>
+                        {new Date(r.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </section>
 
       <section className="od-row od-cancel">
@@ -770,6 +876,40 @@ export default function OwnerDashboard() {
               alert('Unable to save policy: ' + err.message);
             }
           }}>Save Policy</button>
+        </div>
+      </section>
+
+      <section className="od-row">
+        <h2>Breakfast</h2>
+        <div className="cancel-row">
+          <label>
+            <input
+              type="checkbox"
+              checked={breakfastAvailable}
+              onChange={(e) => setBreakfastAvailable(e.target.checked)}
+            /> Offer breakfast to guests
+          </label>
+          {breakfastAvailable && (
+            <label style={{ marginLeft: 12 }}>
+              Price per person per night ($):
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={breakfastPrice}
+                onChange={(e) => setBreakfastPrice(Number(e.target.value) || 0)}
+                style={{ width: 90, marginLeft: 8 }}
+              />
+            </label>
+          )}
+          <button className="save-btn" onClick={async () => {
+            try {
+              await ownerSvc.updateSettings(hotelId, { breakfast: { available: breakfastAvailable, price: breakfastPrice } });
+              alert('Breakfast settings saved');
+            } catch (err) {
+              alert('Unable to save: ' + err.message);
+            }
+          }}>Save</button>
         </div>
       </section>
 
@@ -838,8 +978,8 @@ export default function OwnerDashboard() {
               {variants.map((v, i) => (
                 <div key={i} className="variant-row">
                   <input placeholder="Variant name" value={v.name} onChange={(e) => updateVariant(i, 'name', e.target.value)} />
-                  <input type="number" step="1" placeholder="Price delta" value={v.priceDelta} onChange={(e) => updateVariant(i, 'priceDelta', Number(e.target.value) || 0)} />
-                  <input type="number" min={0} placeholder="Capacity" value={v.capacity} onChange={(e) => updateVariant(i, 'capacity', Number(e.target.value) || 0)} />
+                  <input type="number" min={1} placeholder="Amount" value={v.amount} onChange={(e) => updateVariant(i, 'amount', Number(e.target.value) || 1)} />
+                  <input type="number" min={0} step="0.01" placeholder="Add-on price" value={v.price} onChange={(e) => updateVariant(i, 'price', Number(e.target.value) || 0)} />
                   <button onClick={() => removeVariant(i)}>Remove</button>
                 </div>
               ))}
@@ -847,10 +987,10 @@ export default function OwnerDashboard() {
             </div>
 
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12 }}>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div className="room-form-actions">
                 {selectedRoomId && (
                   <button
-                    className="delete-room"
+                    className="room-form-actions-btn room-form-actions-delete"
                     onClick={async () => {
                       if (!window.confirm(`Delete room "${roomName || 'room'}"? This cannot be undone.`)) return;
                       try {
@@ -861,13 +1001,12 @@ export default function OwnerDashboard() {
                         alert('Unable to delete room: ' + (err.message || err));
                       }
                     }}
-                    style={{ background: '#f44336', color: '#fff', border: 'none', padding: '6px 8px', borderRadius: 6 }}
                   >
                     Delete
                   </button>
                 )}
-                <button className="campaign-back" onClick={closeAddRoom} disabled={addSaving}>Cancel</button>
-                <button className="campaign-next" onClick={saveRoom} disabled={addSaving}>{addSaving ? 'Saving...' : 'Save'}</button>
+                <button className="campaign-back room-form-actions-btn" onClick={closeAddRoom} disabled={addSaving}>Cancel</button>
+                <button className="campaign-next room-form-actions-btn" onClick={saveRoom} disabled={addSaving}>{addSaving ? 'Saving...' : 'Save'}</button>
               </div>
             </div>
           </div>

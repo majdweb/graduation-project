@@ -1,0 +1,569 @@
+/* =========================================================
+   Facilities & Attractions page
+   Complete stylesheet (drop this in src/FacilitiesAttractions.css)
+   ========================================================= */
+
+.facilities-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+  color: #0f172a;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* ---------- Hero ---------- */
+.facilities-hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 28px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+}
+
+.facilities-hero-copy {
+  max-width: 620px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.facilities-hero h1 {
+  margin: 0 0 10px;
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+.hero-description {
+  margin: 0;
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.facilities-hero-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px 20px;
+  min-width: 220px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+
+.facilities-hero-card span {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+}
+
+.facilities-hero-card strong {
+  display: block;
+  font-size: 24px;
+  margin: 4px 0 8px;
+}
+
+.facilities-hero-card p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* ---------- Layout ---------- */
+.facilities-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 28px;
+  margin-top: 28px;
+  align-items: start;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.section-head p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+/* ---------- Trip cards ---------- */
+.trips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.trip-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.trip-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+}
+
+.trip-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.trip-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.trip-price {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.trip-card h3 {
+  margin: 4px 0 0;
+  font-size: 18px;
+}
+
+.trip-city {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.trip-description {
+  margin: 0;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.trip-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.empty-state {
+  margin-top: 18px;
+  padding: 40px;
+  text-align: center;
+  color: #94a3b8;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+}
+
+/* ---------- Difficulty badges ---------- */
+.trip-difficulty {
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.difficulty-easy {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.difficulty-medium {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.difficulty-hard {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.difficulty-extreme {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* ---------- Filters panel ---------- */
+.filters-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px;
+  position: sticky;
+  top: 20px;
+}
+
+.filters-panel h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.filter-group {
+  padding: 14px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+.filter-group:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.filter-group h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 14px;
+  color: #334155;
+  cursor: pointer;
+}
+
+.filter-option input {
+  width: 16px;
+  height: 16px;
+  accent-color: #2563eb;
+  cursor: pointer;
+}
+
+/* ---------- Improved price slider ---------- */
+.price-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.price-slider-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.price-slider-label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.price-slider-value {
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.price-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(
+    to right,
+    #2563eb 0%,
+    #2563eb var(--fill, 100%),
+    #e5e7eb var(--fill, 100%),
+    #e5e7eb 100%
+  );
+}
+
+.price-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #2563eb;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.price-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+
+.price-slider:active::-webkit-slider-thumb {
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.18);
+}
+
+.price-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #2563eb;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+  cursor: pointer;
+}
+
+.price-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.price-slider:focus-visible {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+.price-slider-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* ---------- Admin manage controls ---------- */
+.admin-manage-toggle {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #2563eb;
+  background: #ffffff;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.admin-manage-toggle:hover {
+  background: #eff6ff;
+}
+
+.admin-manage-toggle.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.add-trip-btn {
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px dashed #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.add-trip-btn:hover {
+  background: #dbeafe;
+}
+
+.trip-card-admin-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.trip-card-admin-actions button {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.trip-card-admin-actions button:hover {
+  background: #f1f5f9;
+}
+
+.trip-card-admin-actions button.danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.trip-card-admin-actions button.danger:hover {
+  background: #fef2f2;
+}
+
+/* ---------- Trip form modal ---------- */
+.trip-form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.trip-form-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.3);
+}
+
+.trip-form-modal h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+}
+
+.trip-form-modal form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.trip-form-modal label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  flex: 1;
+}
+
+.trip-form-modal input,
+.trip-form-modal select,
+.trip-form-modal textarea {
+  font-weight: 400;
+  font-size: 14px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-family: inherit;
+}
+
+.trip-form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.trip-form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.trip-form-save {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.trip-form-save:hover {
+  background: #1d4ed8;
+}
+
+.trip-form-cancel {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.trip-form-cancel:hover {
+  background: #f1f5f9;
+}
+
+/* ---------- Animations ---------- */
+@keyframes fa-fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fa-slide-right {
+  from { opacity: 0; transform: translateX(28px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fa-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.facilities-hero      { animation: fa-fade-up    0.5s ease both; }
+.facilities-hero-copy { animation: fa-fade-up    0.5s 0.1s ease both; }
+.facilities-hero-card { animation: fa-slide-right 0.48s 0.2s ease both; }
+.filters-panel        { animation: fa-slide-right 0.45s 0.15s ease both; }
+.section-head         { animation: fa-fade-up    0.4s 0.05s ease both; }
+.trip-card            { animation: fa-fade-up    0.4s ease both; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px) {
+  .facilities-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-panel {
+    position: static;
+  }
+}

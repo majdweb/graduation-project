@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import "./ownerDashboard.css";
 import * as ownerSvc from "./services/owner";
+import { getCurrentUser } from "./services/auth";
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -10,14 +11,8 @@ export default function OwnerStats() {
     const envHotelId = process.env.REACT_APP_HOTEL_ID;
     if (envHotelId) return envHotelId;
 
-    try {
-      const raw = localStorage.getItem("mock_auth_user");
-      const parsed = raw ? JSON.parse(raw) : null;
-      const user = parsed?.user || {};
-      return String(user.hotelId || user.hotelName || user.id || 1);
-    } catch (error) {
-      return "1";
-    }
+    const user = getCurrentUser() || {};
+    return String(user.hotelId || user.hotelName || user.id || 1);
   }, []);
 
   const now = new Date();

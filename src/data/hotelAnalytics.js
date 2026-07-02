@@ -1,10 +1,7 @@
-// Pure JSON-driven analytics — no backend. All figures are derived from
-// src/data/hotelsData.json (hotels, rooms, reservations).
-import data from './hotelsData.json';
+// Analytics derived from real hotels/rooms/reservations fetched from the
+// backend (see services/hotels.js -> getHotelsAnalytics).
 
 export const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-export const PLATFORM_CUT_PERCENT = Number(data.platformCutPercent) || 15;
 
 function parseDate(value) {
   const d = new Date(`${value}T00:00:00`);
@@ -32,7 +29,7 @@ function bookingPrice(reservation, roomById) {
   return price * nights(reservation.checkIn, reservation.checkOut);
 }
 
-function roomIndex() {
+function roomIndex(data) {
   return data.rooms.reduce((acc, room) => {
     acc[String(room.id)] = room;
     return acc;
@@ -40,9 +37,11 @@ function roomIndex() {
 }
 
 // Builds the full analytics model for every hotel.
+// `data` is { platformCutPercent, hotels, rooms, reservations } fetched from the backend.
 // `currentMonth` (0-11) drives the "monthly bookings" figure used for sorting.
-export function buildAnalytics(currentMonth = new Date().getMonth()) {
-  const roomById = roomIndex();
+export function buildAnalytics(data, currentMonth = new Date().getMonth()) {
+  const PLATFORM_CUT_PERCENT = Number(data.platformCutPercent) || 15;
+  const roomById = roomIndex(data);
 
   const hotels = data.hotels.map((hotel) => {
     const hotelRooms = data.rooms.filter((r) => String(r.hotelId) === String(hotel.hotelId));
@@ -93,6 +92,7 @@ export function buildAnalytics(currentMonth = new Date().getMonth()) {
       hotelName: hotel.hotelName,
       city: hotel.city,
       stars: hotel.stars,
+      userId: hotel.userId,
       roomsCount: hotelRooms.length,
       totalRoomUnits: hotelRooms.reduce((s, r) => s + (Number(r.amount) || 0), 0),
       rooms,

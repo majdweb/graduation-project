@@ -6,6 +6,7 @@ import {
   rejectRequest,
   REQUEST_FIELDS,
 } from './data/hotelRequests';
+import { approveHotel } from './services/hotels';
 
 function StatusBadge({ status }) {
   const map = {
@@ -46,7 +47,9 @@ function RequestCard({ req, onApprove, onReject, history }) {
             req.changes?.[f.key] ? (
               <div key={f.key} className="hrq-change-line">
                 <span className="hrq-change-label">{f.label}</span>
-                <span className="hrq-change-value">{req.changes[f.key]}</span>
+                <span className="hrq-change-value">
+                  {f.render ? f.render(req.changes[f.key]) : req.changes[f.key]}
+                </span>
               </div>
             ) : null
           )}
@@ -122,6 +125,18 @@ export default function HotelRequests() {
     [requests]
   );
 
+  const handleApprove = async (id) => {
+    const req = requests.find((r) => r.id === id);
+    approveRequest(id);
+    if (req?.ownerEmail) {
+      try {
+        await approveHotel(req.ownerEmail, req.changes?.stars);
+      } catch (e) {
+        console.warn('Server approval failed:', e.message);
+      }
+    }
+  };
+
   return (
     <div className="hrq-root">
       <div className="admin-stats-row">
@@ -154,7 +169,7 @@ export default function HotelRequests() {
         ) : (
           <div className="hrq-list">
             {pending.map((r) => (
-              <RequestCard key={r.id} req={r} onApprove={approveRequest} onReject={rejectRequest} />
+              <RequestCard key={r.id} req={r} onApprove={handleApprove} onReject={rejectRequest} />
             ))}
           </div>
         )}

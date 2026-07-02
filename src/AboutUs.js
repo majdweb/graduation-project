@@ -1,5 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getCurrentRole } from './services/auth'
 import './about.css'
 
 const team = [
@@ -43,15 +44,7 @@ const team = [
 
 export default function AboutUs() {
     const navigate = useNavigate()
-    const isOwner = (() => {
-        try {
-            const raw = localStorage.getItem('mock_auth_user')
-            const parsed = raw ? JSON.parse(raw) : null
-            return (parsed?.user?.role || localStorage.getItem('mock_auth_role')) === 'hotel_owner'
-        } catch (error) {
-            return localStorage.getItem('mock_auth_role') === 'hotel_owner'
-        }
-    })()
+    const isOwner = getCurrentRole() === 'hotel_owner'
     const handleBack = () => {
         const fallback = isOwner ? '/ownerhome' : '/'
         if (window.history.length > 1) {

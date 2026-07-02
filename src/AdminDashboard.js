@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useCallback, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { DEFAULT_CONTENT, STORAGE_KEY } from './useSiteContent';
 import HotelsAnalytics from './HotelsAnalytics';
 import HotelRequests from './HotelRequests';
+import { clearAuth } from './services/auth';
 import './AdminDashboard.css';
-
-const ADMIN_PASSWORD = 'velvet2026';
 
 /* ── helpers ── */
 function loadContent() {
@@ -44,48 +43,6 @@ function Toast({ toasts }) {
           {t.message}
         </div>
       ))}
-    </div>
-  );
-}
-
-/* ── Login Screen ── */
-function LoginScreen({ onLogin }) {
-  const [pw, setPw] = useState('');
-  const [err, setErr] = useState('');
-
-  const submit = (e) => {
-    e.preventDefault();
-    if (pw === ADMIN_PASSWORD) {
-      sessionStorage.setItem('admin_auth', 'true');
-      onLogin();
-    } else {
-      setErr('Incorrect password.');
-      setTimeout(() => setErr(''), 3000);
-    }
-  };
-
-  return (
-    <div className="admin-login-page">
-      <div className="admin-login-card">
-        <div className="admin-login-logo">Velvet Compass</div>
-        <div className="admin-login-subtitle">Admin Control Panel</div>
-        <form className="admin-login-form" onSubmit={submit}>
-          <div>
-            <label className="admin-login-label">Admin Password</label>
-            <input
-              className="admin-login-input"
-              type="password"
-              placeholder="Enter password…"
-              value={pw}
-              onChange={e => setPw(e.target.value)}
-              autoFocus
-            />
-          </div>
-          {err && <div className="admin-login-error">⚠ {err}</div>}
-          <button className="admin-login-btn" type="submit">Sign In →</button>
-        </form>
-        <p className="admin-login-hint">Default: velvet2026</p>
-      </div>
     </div>
   );
 }
@@ -439,9 +396,7 @@ function OverviewTab({ content, onTabChange }) {
    MAIN ADMIN DASHBOARD COMPONENT
 ══════════════════════════════════ */
 export default function AdminDashboard() {
-  const [authenticated, setAuthenticated] = useState(
-    () => sessionStorage.getItem('admin_auth') === 'true'
-  );
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [content, setContent] = useState(() => mergeWithDefaults(loadContent()));
   const [isDirty, setIsDirty] = useState(false);
@@ -551,13 +506,9 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem('admin_auth');
-    setAuthenticated(false);
+    clearAuth();
+    navigate('/login');
   };
-
-  if (!authenticated) {
-    return <LoginScreen onLogin={() => setAuthenticated(true)} />;
-  }
 
   const NAV_ITEMS = [
     { key: 'overview',      icon: '📊', label: 'Overview' },

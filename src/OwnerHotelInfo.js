@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./ownerDashboard.css";
 import * as ownerSvc from "./services/owner";
+import { getCurrentUser } from "./services/auth";
 
 const initialForm = {
   hotelName: "",
@@ -17,14 +18,8 @@ export default function OwnerHotelInfo() {
     const envHotelId = process.env.REACT_APP_HOTEL_ID;
     if (envHotelId) return envHotelId;
 
-    try {
-      const raw = localStorage.getItem("mock_auth_user");
-      const parsed = raw ? JSON.parse(raw) : null;
-      const user = parsed?.user || {};
-      return String(user.hotelId || user.hotelName || user.id || 1);
-    } catch (error) {
-      return "1";
-    }
+    const user = getCurrentUser() || {};
+    return String(user.hotelId || user.hotelName || user.id || 1);
   }, []);
 
   const [form, setForm] = useState(initialForm);

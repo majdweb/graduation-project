@@ -11,6 +11,14 @@ export const REQUEST_FIELDS = [
   { key: 'address', label: 'Address' },
   { key: 'phoneNumber', label: 'Phone Number' },
   { key: 'description', label: 'Description' },
+  {
+    key: 'stars',
+    label: 'Stars',
+    render: (v) => {
+      const n = Math.min(5, Math.max(0, Number(v) || 0));
+      return '★'.repeat(n) + '☆'.repeat(5 - n);
+    },
+  },
 ];
 
 export function getRequests() {

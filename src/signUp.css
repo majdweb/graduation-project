@@ -39,7 +39,7 @@
   border: 1px solid rgba(255, 255, 255, 0.35);
 }
 
-h1 {
+.page h1 {
   margin: 0 0 6px;
   color: #0b1f4d;
   font-size: 1.7rem;
@@ -51,12 +51,12 @@ h1 {
   font-size: 0.95rem;
 }
 
-form {
+.page form {
   display: grid;
   gap: 12px;
 }
 
-label {
+.page label {
   display: grid;
   gap: 6px;
   color: #1b2438;
@@ -64,10 +64,10 @@ label {
   font-size: 0.92rem;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="tel"],
-input[type="password"] {
+.page input[type="text"],
+.page input[type="email"],
+.page input[type="tel"],
+.page input[type="password"] {
   width: 100%;
   border: 1px solid #d6dce8;
   border-radius: 10px;
@@ -78,7 +78,7 @@ input[type="password"] {
   transition: 0.2s border-color, 0.2s box-shadow;
 }
 
-input:focus {
+.page input:focus {
   outline: none;
   border-color: #0b1f4d;
   box-shadow: 0 0 0 3px rgba(11, 31, 77, 0.12);
@@ -107,7 +107,7 @@ input:focus {
   font-weight: 600;
 }
 
-button {
+.page button {
   margin-top: 6px;
   border: none;
   border-radius: 10px;
@@ -120,17 +120,17 @@ button {
   transition: 0.2s opacity, 0.2s transform;
 }
 
-button:hover:not(:disabled) {
+.page button:hover:not(:disabled) {
   opacity: 0.95;
   transform: translateY(-1px);
 }
 
-button:disabled {
+.page button:disabled {
   opacity: 0.65;
   cursor: not-allowed;
 }
 
-.link-button {
+.page .link-button {
   margin-top: 2px;
   padding: 0;
   border: none;
@@ -142,7 +142,7 @@ button:disabled {
   cursor: pointer;
 }
 
-.link-button:hover:not(:disabled) {
+.page .link-button:hover:not(:disabled) {
   text-decoration: underline;
   transform: none;
   opacity: 1;
@@ -197,3 +197,87 @@ button:disabled {
   width: 120px; height: 84px; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1;
 }
 .signup-doc-name { font-size: 12px; color: #64748b; }
+
+/* Terms / Privacy Policy inline links + modal */
+.legal-link {
+  color: #4a9bf0;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.legal-link:hover {
+  text-decoration: underline;
+}
+
+.legal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 15, 35, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.legal-modal {
+  width: min(100%, 520px);
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(3, 10, 28, 0.35);
+}
+
+.legal-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.legal-modal-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #0b1f4d;
+}
+
+.legal-modal-close {
+  margin: 0;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.legal-modal-close:hover {
+  background: #e2e8f0;
+}
+
+.legal-modal-body p {
+  margin: 0 0 12px;
+  color: #34415c;
+  line-height: 1.6;
+  font-size: 0.92rem;
+}
+
+.legal-modal-done {
+  margin-top: 8px;
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: #0b1f4d;
+  cursor: pointer;
+}
+
+.legal-modal-done:hover {
+  opacity: 0.95;
+}

@@ -1,5 +1,42 @@
-import { useMemo, useState } from 'react';
-import { buildAnalytics, formatMoney, MONTH_LABELS, PLATFORM_CUT_PERCENT } from './data/hotelAnalytics';
+import { useEffect, useMemo, useState } from 'react';
+import { buildAnalytics, formatMoney, MONTH_LABELS } from './data/hotelAnalytics';
+import { getHotelsAnalytics, setHotelStars } from './services/hotels';
+
+function InlineStarPicker({ userId, currentStars, onSaved }) {
+  const [saving, setSaving] = useState(false);
+  const [hover, setHover] = useState(0);
+  const display = hover || currentStars || 0;
+
+  const handleClick = async (n) => {
+    if (n === currentStars || saving) return;
+    setSaving(true);
+    try {
+      await setHotelStars(userId, n);
+      onSaved(n);
+    } catch (e) {
+      alert('Failed to update stars: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <span style={{ display: 'inline-flex', gap: 2, marginLeft: 6, opacity: saving ? 0.5 : 1 }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span
+          key={n}
+          onMouseEnter={() => setHover(n)}
+          onMouseLeave={() => setHover(0)}
+          onClick={(e) => { e.stopPropagation(); handleClick(n); }}
+          style={{ cursor: saving ? 'default' : 'pointer', color: n <= display ? '#f59e0b' : '#d1d5db', fontSize: 15, lineHeight: 1, userSelect: 'none' }}
+          title={`Set to ${n} star${n > 1 ? 's' : ''}`}
+        >
+          ★
+        </span>
+      ))}
+    </span>
+  );
+}
 
 /* ── small CSS bar chart ── */
 function BarChart({ items, valueKey, labelKey, color = '#6C8BC7', formatValue }) {
@@ -60,8 +97,22 @@ export default function HotelsAnalytics() {
   const [sortKey, setSortKey] = useState('bookings');
   const [sortDir, setSortDir] = useState('desc');
   const [selectedId, setSelectedId] = useState(null);
+  const [rawData, setRawData] = useState(null);
+  const [loadError, setLoadError] = useState('');
 
-  const { hotels, totals } = useMemo(() => buildAnalytics(currentMonth), [currentMonth]);
+  useEffect(() => {
+    getHotelsAnalytics()
+      .then(setRawData)
+      .catch((err) => setLoadError(err.message || 'Unable to load hotels analytics.'));
+  }, []);
+
+  const { hotels, totals, platformCutPercent } = useMemo(
+    () =>
+      rawData
+        ? buildAnalytics(rawData, currentMonth)
+        : { hotels: [], totals: { bookings: 0, gross: 0, hotelProfit: 0, platformProfit: 0, rooms: 0 }, platformCutPercent: 15 },
+    [rawData, currentMonth]
+  );
 
   const sortedHotels = useMemo(() => {
     const accessor = {
@@ -90,8 +141,19 @@ export default function HotelsAnalytics() {
     }
   };
 
+  const handleStarSaved = (hotelId, newStars) => {
+    setRawData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        hotels: prev.hotels.map((h) => h.hotelId === hotelId ? { ...h, stars: newStars } : h),
+      };
+    });
+  };
+
   return (
     <div className="ha-root">
+      {loadError && <div className="admin-stat-sub" style={{ color: '#e05555', marginBottom: 12 }}>{loadError}</div>}
       {/* Summary stat cards */}
       <div className="admin-stats-row">
         <div className="admin-stat-card">
@@ -107,12 +169,12 @@ export default function HotelsAnalytics() {
         <div className="admin-stat-card">
           <div className="admin-stat-label">Hotels Profit</div>
           <div className="admin-stat-value" style={{ fontSize: 20 }}>{formatMoney(totals.hotelProfit)}</div>
-          <div className="admin-stat-sub">{100 - PLATFORM_CUT_PERCENT}% of bookings</div>
+          <div className="admin-stat-sub">{100 - platformCutPercent}% of bookings</div>
         </div>
         <div className="admin-stat-card">
           <div className="admin-stat-label">Platform Profit</div>
           <div className="admin-stat-value" style={{ fontSize: 20 }}>{formatMoney(totals.platformProfit)}</div>
-          <div className="admin-stat-sub">{PLATFORM_CUT_PERCENT}% of every booking</div>
+          <div className="admin-stat-sub">{platformCutPercent}% of every booking</div>
         </div>
       </div>
 
@@ -189,7 +251,11 @@ export default function HotelsAnalytics() {
                 >
                   <td>
                     <strong>{h.hotelName}</strong>
-                    <span className="ha-stars">{'★'.repeat(h.stars)}</span>
+                    <InlineStarPicker
+                      userId={h.userId}
+                      currentStars={h.stars}
+                      onSaved={(n) => handleStarSaved(h.hotelId, n)}
+                    />
                   </td>
                   <td>{h.city}</td>
                   <td className="ha-num">{h.roomsCount}</td>
@@ -212,7 +278,12 @@ export default function HotelsAnalytics() {
           <div className="ha-detail-header">
             <div>
               <div className="admin-card-title" style={{ margin: 0 }}>
-                {selected.hotelName} <span className="ha-stars">{'★'.repeat(selected.stars)}</span>
+                {selected.hotelName}
+                <InlineStarPicker
+                  userId={selected.userId}
+                  currentStars={selected.stars}
+                  onSaved={(n) => handleStarSaved(selected.hotelId, n)}
+                />
               </div>
               <div className="ha-detail-sub">{selected.city} · {selected.roomsCount} room types · {selected.totalRoomUnits} units</div>
             </div>
@@ -233,7 +304,7 @@ export default function HotelsAnalytics() {
               <span className="ha-mini-value">{formatMoney(selected.hotelProfit)}</span>
             </div>
             <div className="ha-mini-stat ha-platform">
-              <span className="ha-mini-label">Platform Profit ({PLATFORM_CUT_PERCENT}%)</span>
+              <span className="ha-mini-label">Platform Profit ({platformCutPercent}%)</span>
               <span className="ha-mini-value">{formatMoney(selected.platformProfit)}</span>
             </div>
           </div>

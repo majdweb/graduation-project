@@ -1,0 +1,259 @@
+.cp-page {
+  min-height: 100vh;
+  background: #f5f6fa;
+  display: flex;
+  flex-direction: column;
+  font-family: "SN Pro", sans-serif;
+}
+
+/* ── Hero ── */
+.cp-hero {
+  background: linear-gradient(135deg, #2a3d66 0%, #4a6aa0 100%);
+  color: #fff;
+  text-align: center;
+  padding: 90px 24px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cp-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 60% 40%, rgba(232, 184, 109, 0.18) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.cp-hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  margin: 0 0 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.cp-hero p {
+  font-size: 1.15rem;
+  opacity: 0.88;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Body layout ── */
+.cp-body {
+  flex: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 60px 24px 80px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ── Form card ── */
+.cp-form-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 36px;
+  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.08);
+}
+
+.cp-form-card h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2a3d66;
+  margin: 0 0 28px;
+}
+
+.cp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cp-field label {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cp-field input,
+.cp-field textarea {
+  padding: 12px 14px;
+  border: 1.5px solid #d6dce8;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #1c1c1c;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: vertical;
+  background: #fafbfc;
+}
+
+.cp-field input:focus,
+.cp-field textarea:focus {
+  outline: none;
+  border-color: #2a3d66;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(42, 61, 102, 0.1);
+}
+
+.cp-submit-btn {
+  padding: 14px 28px;
+  background: #2a3d66;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  font-family: inherit;
+  align-self: flex-start;
+}
+
+.cp-submit-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-2px);
+}
+
+.cp-error {
+  color: #dc2626;
+  font-size: 0.88rem;
+  margin: 0;
+  background: #fef2f2;
+  border-radius: 8px;
+  padding: 10px 14px;
+  border: 1px solid #fecaca;
+}
+
+/* ── Success state ── */
+.cp-success {
+  text-align: center;
+  padding: 32px 0 16px;
+}
+
+.cp-success-icon {
+  font-size: 3.5rem;
+  margin-bottom: 12px;
+}
+
+.cp-success h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #2a3d66;
+  margin: 0 0 10px;
+}
+
+.cp-success p {
+  color: #4b5563;
+  font-size: 0.95rem;
+  margin: 0 0 24px;
+  line-height: 1.6;
+}
+
+.cp-reset-btn {
+  padding: 11px 24px;
+  background: #e8b86d;
+  color: #2a3d66;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.cp-reset-btn:hover {
+  opacity: 0.88;
+  transform: translateY(-2px);
+}
+
+/* ── Info sidebar ── */
+.cp-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cp-info-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 18px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  border-left: 4px solid #2a3d66;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cp-info-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.11);
+}
+
+.cp-info-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cp-info-card h4 {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 4px;
+}
+
+.cp-info-card p {
+  font-size: 0.95rem;
+  color: #1a2340;
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ── Footer ── */
+.cp-footer {
+  text-align: center;
+  padding: 24px;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* ── Responsive ── */
+@media (max-width: 780px) {
+  .cp-body {
+    grid-template-columns: 1fr;
+    padding: 40px 16px 60px;
+  }
+
+  .cp-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .cp-form-card {
+    padding: 28px 20px;
+  }
+
+  .cp-nav {
+    padding: 12px 16px;
+  }
+}
