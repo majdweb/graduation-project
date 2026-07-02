@@ -1,53 +1,6 @@
 {
   "rooms": [
     {
-      "id": 1,
-      "hotelId": "1",
-      "name": "standard room",
-      "amount": 10,
-      "capacity": 3,
-      "price": 100,
-      "variants": [
-        {
-          "name": "",
-          "priceDelta": 0,
-          "capacity": 1
-        }
-      ],
-      "photos": [
-        "http://localhost:5001/public/1778069788135_0_s0ems6"
-      ],
-      "status": "draft",
-      "bookable": true,
-      "stars": 3
-    },
-    {
-      "id": 2,
-      "hotelId": "mansourian",
-      "name": "standard",
-      "amount": 10,
-      "capacity": 2,
-      "price": 100,
-      "variants": [
-        {
-          "name": "sea view",
-          "priceDelta": 3,
-          "capacity": 50
-        },
-        {
-          "name": "sea window",
-          "priceDelta": 2,
-          "capacity": 25
-        }
-      ],
-      "photos": [
-        "http://localhost:5001/public/1778093532992_0_74klgq"
-      ],
-      "status": "draft",
-      "bookable": true,
-      "stars": 3
-    },
-    {
       "id": 3,
       "hotelId": "sheraton",
       "name": "standard room",
@@ -57,8 +10,18 @@
       "variants": [
         {
           "name": "sea view",
-          "priceDelta": 2,
-          "capacity": 20
+          "amount": 2,
+          "price": 20
+        },
+        {
+          "name": "beach ",
+          "amount": 3,
+          "price": 30
+        },
+        {
+          "name": "",
+          "amount": 1,
+          "price": 0
         }
       ],
       "photos": [
@@ -67,15 +30,61 @@
       "status": "draft",
       "bookable": true,
       "stars": 3
+    },
+    {
+      "id": 4,
+      "hotelId": "sheraton",
+      "name": "luxury room",
+      "amount": 14,
+      "capacity": 3,
+      "price": 777,
+      "variants": [],
+      "photos": [
+        "http://localhost:5001/public/1782836965199_0_g5tp2l"
+      ],
+      "status": "draft",
+      "bookable": true,
+      "stars": 3
+    },
+    {
+      "id": 5,
+      "hotelId": "niggershub",
+      "name": "basic",
+      "amount": 20,
+      "capacity": 2,
+      "price": 40,
+      "variants": [],
+      "photos": [
+        "http://localhost:5001/public/1782837118552_0_td03y1"
+      ],
+      "status": "draft",
+      "bookable": true,
+      "stars": 3
     }
   ],
-  "nextRoomId": 4,
+  "nextRoomId": 6,
   "users": [
+    {
+      "id": 8,
+      "username": "admin",
+      "email": "admin@velvetcompass.com",
+      "role": "admin",
+      "hotelId": null,
+      "hotelName": null,
+      "city": null,
+      "address": null,
+      "phoneNumber": null,
+      "description": null,
+      "photos": [],
+      "password": "velvet2026",
+      "createdAt": "2026-06-30T00:00:00.000Z"
+    },
     {
       "id": 1,
       "username": "mohammad",
       "email": "2001mohammad.mansour@gmail.com",
       "role": "hotel_owner",
+      "hotelId": "sheraton",
       "hotelName": "sheraton",
       "city": "aleppo",
       "password": "Aaaaaaaaa.",
@@ -85,7 +94,9 @@
       "description": "best hotel in aleppo",
       "photos": [
         "http://localhost:5001/public/1778263332404_0_6rx2q7"
-      ]
+      ],
+      "approved": true,
+      "stars": 5
     },
     {
       "id": 2,
@@ -130,7 +141,8 @@
       "description": null,
       "photos": [],
       "password": "12345Aa!",
-      "createdAt": "2026-05-15T15:31:05.234Z"
+      "createdAt": "2026-05-15T15:31:05.234Z",
+      "stars": 4
     },
     {
       "id": 5,
@@ -145,7 +157,8 @@
       "description": null,
       "photos": [],
       "password": "Aa123456.",
-      "createdAt": "2026-06-30T10:02:56.924Z"
+      "createdAt": "2026-06-30T10:02:56.924Z",
+      "stars": 3
     },
     {
       "id": 6,
@@ -160,7 +173,8 @@
       "description": null,
       "photos": [],
       "password": "Ss123456.",
-      "createdAt": "2026-06-30T10:35:21.728Z"
+      "createdAt": "2026-06-30T10:35:21.728Z",
+      "stars": 3
     },
     {
       "id": 7,
@@ -169,48 +183,217 @@
       "role": "hotel_owner",
       "hotelId": "niggershub",
       "hotelName": "niggershub",
-      "city": "nigaco",
+      "city": "damascus",
       "address": null,
       "phoneNumber": "0912345678",
       "description": null,
       "photos": [],
       "password": "Nn123456.",
-      "createdAt": "2026-06-30T10:46:51.055Z"
+      "createdAt": "2026-06-30T10:46:51.055Z",
+      "stars": 4
+    },
+    {
+      "id": 9,
+      "username": "normal user",
+      "email": "normaluser@gmail.com",
+      "role": "guest",
+      "hotelId": null,
+      "hotelName": null,
+      "city": null,
+      "address": null,
+      "phoneNumber": "09123123123",
+      "description": null,
+      "photos": [],
+      "password": "Mohammad.",
+      "createdAt": "2026-06-30T16:33:09.921Z"
+    },
+    {
+      "id": 10,
+      "username": "bitch",
+      "email": "bitch@gmail.com",
+      "role": "hotel_owner",
+      "hotelId": "bitch",
+      "hotelName": "bitch",
+      "city": "aleppo",
+      "address": null,
+      "phoneNumber": "09123123123",
+      "description": null,
+      "photos": [],
+      "password": "Mohammad.",
+      "createdAt": "2026-07-01T08:03:23.608Z",
+      "approved": true
     }
   ],
-  "nextUserId": 8,
+  "nextUserId": 11,
   "reservations": [
     {
       "id": 1,
-      "hotelId": "1",
-      "roomId": 1,
-      "guestName": "Ava Johnson",
-      "checkIn": "2026-05-08",
-      "checkOut": "2026-05-11",
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "guestName": "Mohammad Mansour",
+      "guestEmail": "MohammadMansour@gmail.com",
+      "guestPhone": "33605924",
+      "guests": 2,
+      "checkIn": "2026-07-01",
+      "checkOut": "2026-07-03",
       "status": "confirmed"
     },
     {
       "id": 2,
-      "hotelId": "1",
-      "roomId": 2,
-      "guestName": "Noah Smith",
-      "checkIn": "2026-05-13",
-      "checkOut": "2026-05-16",
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "guestName": "Mohammad Mansour",
+      "guestEmail": "rfesf@gmail.com",
+      "guestPhone": "33605924",
+      "guests": 1,
+      "checkIn": "2026-07-03",
+      "checkOut": "2026-07-07",
       "status": "confirmed"
     },
     {
       "id": 3,
-      "hotelId": "1",
-      "roomId": 1,
-      "guestName": "Mia Chen",
-      "checkIn": "2026-05-21",
-      "checkOut": "2026-05-24",
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "userId": 9,
+      "guestName": "Mohammad Mansour",
+      "guestEmail": "dfas@gmail.com",
+      "guestPhone": "33605924",
+      "guests": 2,
+      "checkIn": "2026-07-04",
+      "checkOut": "2026-07-07",
       "status": "cancelled"
+    },
+    {
+      "id": 4,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "userId": 9,
+      "guestName": "Mohammad Mansour",
+      "guestEmail": "ew@gmail.com",
+      "guestPhone": "33605924",
+      "guests": 1,
+      "checkIn": "2026-07-29",
+      "checkOut": "2026-07-31",
+      "status": "confirmed"
+    },
+    {
+      "id": 5,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "userId": 9,
+      "guestName": "Mohammad Mansour",
+      "guestEmail": "shit@gmail.com",
+      "guestPhone": "33605924",
+      "guests": 2,
+      "checkIn": "2026-07-01",
+      "checkOut": "2026-07-02",
+      "breakfast": true,
+      "status": "confirmed"
+    },
+    {
+      "id": 6,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "userId": 9,
+      "guestName": "Mohammad Mansour",
+      "guestEmail": "htd@gmail.com",
+      "guestPhone": "33605924",
+      "guests": 1,
+      "checkIn": "2026-07-07",
+      "checkOut": "2026-07-08",
+      "breakfast": true,
+      "status": "confirmed"
+    },
+    {
+      "id": 7,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "userId": 9,
+      "guestName": "normal user",
+      "guestEmail": "normaluser@gmail.com",
+      "guestPhone": "09123123123",
+      "guests": 2,
+      "checkIn": "2026-06-28",
+      "checkOut": "2026-06-30",
+      "breakfast": false,
+      "status": "confirmed"
+    },
+    {
+      "id": 8,
+      "hotelId": "sheraton",
+      "roomId": 4,
+      "userId": null,
+      "guestName": "Mohammad Mansour",
+      "guestEmail": "dad@gmail.com",
+      "guestPhone": "33605924",
+      "guests": 1,
+      "checkIn": "2026-07-02",
+      "checkOut": "2026-07-04",
+      "breakfast": true,
+      "status": "confirmed"
+    },
+    {
+      "id": 9,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "userId": 9,
+      "guestName": "normal user",
+      "guestEmail": "normaluser@gmail.com",
+      "guestPhone": "09123123123",
+      "guests": 2,
+      "checkIn": "2026-06-20",
+      "checkOut": "2026-06-30",
+      "breakfast": false,
+      "status": "confirmed"
     }
   ],
   "hotelSettings": {
-    "1": {
-      "autoAcceptBookings": true
+    "sheraton": {
+      "autoAcceptBookings": false,
+      "breakfast": {
+        "available": true,
+        "price": 10
+      }
     }
-  }
+  },
+  "reviews": [
+    {
+      "id": 1,
+      "reservationId": 7,
+      "roomId": 4,
+      "hotelId": "sheraton",
+      "userId": 9,
+      "guestName": "normal user",
+      "ratings": {
+        "staff": 4,
+        "location": 9,
+        "facilities": 10,
+        "cleanliness": 10,
+        "comfort": 10,
+        "value": 10
+      },
+      "overallScore": 9.1,
+      "comment": "best hotel and room ever \ni will book it again like 50 times",
+      "createdAt": "2026-07-01T10:14:32.999Z"
+    },
+    {
+      "id": 2,
+      "reservationId": 9,
+      "roomId": 3,
+      "hotelId": "sheraton",
+      "userId": 9,
+      "guestName": "normal user",
+      "ratings": {
+        "staff": 9,
+        "location": 10,
+        "facilities": 10,
+        "cleanliness": 10,
+        "comfort": 10,
+        "value": 10
+      },
+      "overallScore": 9.9,
+      "comment": "best hotelllllllll eveeeeeeeeeeeer",
+      "createdAt": "2026-07-01T18:43:43.180Z"
+    }
+  ]
 }

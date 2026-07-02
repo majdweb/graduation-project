@@ -52,7 +52,8 @@ function getDefaultState() {
     ],
     hotelSettings: {
       '1': { autoAcceptBookings: true, campaignActive: false, campaignConfig: null }
-    }
+    },
+    reviews: [],
   };
 }
 
@@ -72,6 +73,7 @@ function loadState() {
       users: Array.isArray(parsed.users) ? parsed.users : [],
       reservations: Array.isArray(parsed.reservations) ? parsed.reservations : getDefaultState().reservations,
       hotelSettings: parsed.hotelSettings || getDefaultState().hotelSettings,
+      reviews: Array.isArray(parsed.reviews) ? parsed.reviews : [],
       nextRoomId: Number.isFinite(parsed.nextRoomId) ? parsed.nextRoomId : 1,
       nextUserId: Number.isFinite(parsed.nextUserId) ? parsed.nextUserId : 1,
     };
@@ -89,6 +91,7 @@ function saveState() {
     nextUserId,
     reservations,
     hotelSettings,
+    reviews,
   };
   fs.writeFileSync(dataFilePath, JSON.stringify(snapshot, null, 2), 'utf8');
 }
@@ -106,6 +109,7 @@ let reservations = state.reservations;
 
 // per-hotel settings (mock)
 const hotelSettings = state.hotelSettings;
+let reviews = state.reviews;
 
 function findOwnerIndexByHotelId(hotelId) {
   const target = String(hotelId || '').trim().toLowerCase();
@@ -148,6 +152,7 @@ function buildAuthUserPayload(user) {
     address: user.address,
     phoneNumber: user.phoneNumber,
     description: user.description,
+    stars: user.stars || null,
     photos,
     cardPhoto: photos.length ? photos[0] : null,
   };
@@ -165,6 +170,7 @@ function buildOwnerProfilePayload(owner) {
     address: owner.address || '',
     phoneNumber: owner.phoneNumber || '',
     description: owner.description || '',
+    stars: Number(owner.stars) || null,
     photos,
     cardPhoto: photos.length ? photos[0] : null,
   };
@@ -172,6 +178,16 @@ function buildOwnerProfilePayload(owner) {
 
 function normalizeHotelKey(value) {
   return String(value || "").trim().toLowerCase();
+}
+
+// Counts reservations (confirmed or pending) for a room that overlap the given date range.
+function countOverlappingReservations(roomId, checkIn, checkOut) {
+  return reservations.filter((r) =>
+    r.roomId === roomId &&
+    (r.status === 'confirmed' || r.status === 'pending') &&
+    new Date(r.checkIn) < new Date(checkOut) &&
+    new Date(r.checkOut) > new Date(checkIn)
+  ).length;
 }
 
 function buildHotelSummary(owner, allRooms) {
@@ -194,6 +210,7 @@ function buildHotelSummary(owner, allRooms) {
     minPrice: prices.length ? Math.min(...prices) : null,
     maxPrice: prices.length ? Math.max(...prices) : null,
     rating: stars.length ? Math.round(stars.reduce((sum, value) => sum + value, 0) / stars.length) : null,
+    stars: Number(owner.stars) || null,
     roomsCount: hotelRooms.length,
     photos,
     cardPhoto: photos.length ? photos[0] : null,
@@ -259,7 +276,6 @@ app.post('/api/owner/:hotelId/rooms', (req, res) => {
     photos: payload.photos || [],
     status: payload.status || 'active',
     bookable: true,
-    stars: 3
   };
   rooms.push(room);
   saveState();
@@ -285,6 +301,8 @@ app.post('/api/auth/signup', (req, res) => {
     description: payload.description || null,
     photos: normalizePhotoUrls(payload.photos),
     password: payload.password, // plaintext for mock only
+    approved: payload.role === 'hotel_owner' ? false : undefined,
+    stars: payload.role === 'hotel_owner' ? (Number(payload.stars) || null) : undefined,
     createdAt: new Date().toISOString(),
   };
   users.push(user);
@@ -305,15 +323,114 @@ app.post('/api/auth/login', (req, res) => {
 
 app.get('/api/hotels', (req, res) => {
   const list = users
-    .filter((u) => u.role === 'hotel_owner' && (u.hotelName || u.hotelId))
+    .filter((u) => u.role === 'hotel_owner' && (u.hotelName || u.hotelId) && u.approved !== false)
     .map((u) => buildHotelSummary(u, rooms));
   res.json(list);
+});
+
+// Public: rooms enriched with their hotel's name/city, used for home-search results
+app.get('/api/rooms/search', (req, res) => {
+  const checkIn = typeof req.query.checkIn === 'string' ? req.query.checkIn : '';
+  const checkOut = typeof req.query.checkOut === 'string' ? req.query.checkOut : '';
+  const checkDates = Boolean(checkIn && checkOut);
+
+  const owners = users.filter((u) => u.role === 'hotel_owner' && u.approved !== false);
+  const list = rooms
+    .filter((room) => {
+      if (room.bookable === false) return false;
+      const roomKey = normalizeHotelKey(room.hotelId || room.hotelName);
+      return owners.some((o) => normalizeHotelKey(o.hotelId || o.hotelName || o.id) === roomKey);
+    })
+    .map((room) => {
+      const roomKey = normalizeHotelKey(room.hotelId || room.hotelName);
+      const owner = owners.find(
+        (o) => normalizeHotelKey(o.hotelId || o.hotelName || o.id) === roomKey
+      );
+      const amount = Number(room.amount) || 0;
+      const remaining = checkDates
+        ? amount - countOverlappingReservations(room.id, checkIn, checkOut)
+        : amount;
+      const roomReviews = reviews.filter((rv) => rv.roomId === room.id);
+      const reviewCount = roomReviews.length;
+      const avgScore = reviewCount ? Math.round((roomReviews.reduce((s, rv) => s + rv.overallScore, 0) / reviewCount) * 10) / 10 : null;
+      return {
+        id: room.id,
+        hotelId: roomKey,
+        hotelName: owner?.hotelName || room.hotelId || 'Hotel',
+        city: owner?.city || '',
+        hotelStars: Number(owner?.stars) || null,
+        name: room.name,
+        price: Number(room.price) || 0,
+        capacity: Number(room.capacity) || 1,
+        amount,
+        remaining,
+        photos: normalizePhotoUrls(room.photos),
+        avgScore,
+        reviewCount,
+      };
+    })
+    .filter((room) => !checkDates || room.remaining > 0);
+  res.json(list);
+});
+
+// Admin: real hotels/rooms/reservations for the analytics dashboard
+app.get('/api/admin/hotels-analytics', (req, res) => {
+  const owners = users.filter((u) => u.role === 'hotel_owner');
+
+  const roomsOut = rooms.map((room) => ({
+    id: room.id,
+    hotelId: normalizeHotelKey(room.hotelId || room.hotelName),
+    name: room.name,
+    price: Number(room.price) || 0,
+    amount: Number(room.amount) || 0,
+    stars: Number(room.stars) || 3,
+  }));
+
+  const reservationsOut = reservations.map((r) => {
+    const room = rooms.find((rm) => String(rm.id) === String(r.roomId));
+    const hotelId = room
+      ? normalizeHotelKey(room.hotelId || room.hotelName)
+      : normalizeHotelKey(r.hotelId);
+    return {
+      id: r.id,
+      hotelId,
+      roomId: r.roomId,
+      checkIn: r.checkIn,
+      checkOut: r.checkOut,
+      status: r.status,
+    };
+  });
+
+  const hotels = owners.map((owner) => {
+    const hotelId = normalizeHotelKey(owner.hotelId || owner.hotelName || owner.id);
+    return {
+      hotelId,
+      hotelName: owner.hotelName || hotelId,
+      city: owner.city || '',
+      stars: Number(owner.stars) || null,
+      userId: owner.id,
+    };
+  });
+
+  res.json({
+    platformCutPercent: 15,
+    hotels,
+    rooms: roomsOut,
+    reservations: reservationsOut,
+  });
 });
 
 
 app.get('/api/owner/:hotelId/rooms', (req, res) => {
   const hotelId = req.params.hotelId;
-  const list = rooms.filter(r => String(r.hotelId) === String(hotelId));
+  const list = rooms
+    .filter((r) => String(r.hotelId) === String(hotelId))
+    .map((room) => {
+      const roomReviews = reviews.filter((rv) => rv.roomId === room.id);
+      const reviewCount = roomReviews.length;
+      const avgScore = reviewCount ? Math.round((roomReviews.reduce((s, rv) => s + rv.overallScore, 0) / reviewCount) * 10) / 10 : null;
+      return { ...room, avgScore, reviewCount };
+    });
   res.json(list);
 });
 
@@ -329,6 +446,38 @@ app.get('/api/owner/:hotelId/reservations', (req, res) => {
       ...r,
       roomName: roomLookup[String(r.roomId)] || `Room ${r.roomId}`
     }));
+  res.json(list);
+});
+
+// Guest: their own reservations across all hotels, for the "My Bookings" page
+app.get('/api/guests/:userId/reservations', (req, res) => {
+  const userId = req.params.userId;
+  const owners = users.filter((u) => u.role === 'hotel_owner');
+  const roomLookup = rooms.reduce((acc, room) => {
+    acc[String(room.id)] = room;
+    return acc;
+  }, {});
+  const list = reservations
+    .filter((r) => String(r.userId) === String(userId))
+    .map((r) => {
+      const room = roomLookup[String(r.roomId)];
+      const hotelKey = room ? normalizeHotelKey(room.hotelId || room.hotelName) : normalizeHotelKey(r.hotelId);
+      const owner = owners.find((o) => normalizeHotelKey(o.hotelId || o.hotelName || o.id) === hotelKey);
+      const settingsKey = Object.keys(hotelSettings).find((key) => normalizeHotelKey(key) === hotelKey);
+      const settings = (settingsKey ? hotelSettings[settingsKey] : null) || {};
+      const hasReview = reviews.some((rv) => rv.reservationId === r.id);
+      const today = new Date().toISOString().slice(0, 10);
+      const reviewable = r.status === 'confirmed' && r.checkOut < today && !hasReview && Boolean(r.userId);
+      return {
+        ...r,
+        roomName: room?.name || `Room ${r.roomId}`,
+        hotelName: owner?.hotelName || r.hotelId || 'Hotel',
+        cancelPolicy: settings.cancelPolicy || { freeCancel: true, daysBefore: 2 },
+        hasReview,
+        reviewable,
+      };
+    })
+    .sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn));
   res.json(list);
 });
 
@@ -394,20 +543,108 @@ app.post('/api/owner/:hotelId/reservations/:id/reject', (req, res) => {
   res.json(reservations[idx]);
 });
 
+// Guest: cancel their own pending or confirmed booking
+app.post('/api/reservations/:id/cancel', (req, res) => {
+  const id = Number(req.params.id);
+  const idx = reservations.findIndex(r => r.id === id);
+  if (idx === -1) return res.status(404).json({ message: 'Not found' });
+
+  const reservation = reservations[idx];
+  if (reservation.status !== 'pending' && reservation.status !== 'confirmed') {
+    return res.status(400).json({ message: 'This booking can no longer be cancelled.' });
+  }
+
+  const requestUserId = req.body?.userId;
+  if (reservation.userId && String(reservation.userId) !== String(requestUserId)) {
+    return res.status(403).json({ message: 'You can only cancel your own bookings.' });
+  }
+
+  reservations[idx].status = 'cancelled';
+  saveState();
+  res.json(reservations[idx]);
+});
+
+// Guest: modify their own booking dates
+app.patch('/api/reservations/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const idx = reservations.findIndex(r => r.id === id);
+  if (idx === -1) return res.status(404).json({ message: 'Not found' });
+
+  const reservation = reservations[idx];
+  if (reservation.status !== 'pending' && reservation.status !== 'confirmed') {
+    return res.status(400).json({ message: 'This booking can no longer be modified.' });
+  }
+
+  const requestUserId = req.body?.userId;
+  if (reservation.userId && String(reservation.userId) !== String(requestUserId)) {
+    return res.status(403).json({ message: 'You can only modify your own bookings.' });
+  }
+
+  const { checkIn, checkOut } = req.body || {};
+  if (!checkIn || !checkOut) return res.status(400).json({ message: 'checkIn and checkOut are required.' });
+  if (new Date(checkIn) >= new Date(checkOut)) return res.status(400).json({ message: 'Check-out must be after check-in.' });
+
+  const room = rooms.find(r => r.id === reservation.roomId);
+  if (room) {
+    const overlapping = reservations.filter(r =>
+      r.id !== id &&
+      r.roomId === reservation.roomId &&
+      (r.status === 'confirmed' || r.status === 'pending') &&
+      new Date(r.checkIn) < new Date(checkOut) &&
+      new Date(r.checkOut) > new Date(checkIn)
+    ).length;
+    if (overlapping >= Number(room.amount || 1)) {
+      return res.status(409).json({ message: 'Room is fully booked for the new dates.' });
+    }
+  }
+
+  reservations[idx].checkIn = checkIn;
+  reservations[idx].checkOut = checkOut;
+  const hotelSettings_ = hotelSettings[reservation.hotelId] || {};
+  reservations[idx].status = hotelSettings_.autoAcceptBookings ? 'confirmed' : 'pending';
+  saveState();
+  res.json(reservations[idx]);
+});
+
 // Create a reservation (used to simulate incoming bookings)
 app.post('/api/hotels/:hotelId/reservations', (req, res) => {
   const hotelId = String(req.params.hotelId);
   const payload = req.body || {};
+
+  const checkIn = payload.checkIn || new Date().toISOString().slice(0, 10);
+  const checkOut = payload.checkOut || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  if (new Date(checkIn) >= new Date(checkOut)) {
+    return res.status(400).json({ message: 'Check-out date must be after check-in date.' });
+  }
+
+  const room = rooms.find((r) => r.id === Number(payload.roomId));
+  if (!room) return res.status(404).json({ message: 'Room not found.' });
+
+  const guests = payload.guests ? Number(payload.guests) : null;
+  if (guests && guests > Number(room.capacity || 1)) {
+    return res.status(400).json({ message: `This room only sleeps ${room.capacity}.` });
+  }
+
+  const overlappingCount = countOverlappingReservations(room.id, checkIn, checkOut);
+  if (overlappingCount >= Number(room.amount || 1)) {
+    return res.status(409).json({ message: 'This room is fully booked for the selected dates.' });
+  }
+
   const settings = hotelSettings[hotelId] || { autoAcceptBookings: true };
   const nextId = reservations.reduce((m, r) => Math.max(m, r.id), 0) + 1;
   const status = settings.autoAcceptBookings ? 'confirmed' : 'pending';
   const reservation = {
     id: nextId,
     hotelId,
-    roomId: payload.roomId || null,
+    roomId: room.id,
+    userId: payload.userId || null,
     guestName: payload.guestName || 'Guest',
-    checkIn: payload.checkIn || new Date().toISOString().slice(0,10),
-    checkOut: payload.checkOut || new Date(Date.now()+24*60*60*1000).toISOString().slice(0,10),
+    guestEmail: payload.guestEmail || null,
+    guestPhone: payload.guestPhone || null,
+    guests: guests || 1,
+    checkIn,
+    checkOut,
+    breakfast: Boolean(payload.breakfast),
     status
   };
   reservations.push(reservation);
@@ -648,13 +885,41 @@ app.get('/api/owner/:hotelId/revenue-stats', (req, res) => {
 });
 
 app.get('/api/owner/:hotelId/billing', (req, res) => {
-  res.json({ gross: 1200, platformCutPercent: 15 });
+  const hotelId = String(req.params.hotelId);
+  const hotelRooms = rooms.filter((r) => String(r.hotelId) === hotelId);
+  const roomPriceLookup = hotelRooms.reduce((acc, room) => {
+    acc[String(room.id)] = Number(room.price) || 0;
+    return acc;
+  }, {});
+  const gross = reservations
+    .filter((r) => String(r.hotelId) === hotelId && r.status === 'confirmed')
+    .reduce((sum, r) => sum + (roomPriceLookup[String(r.roomId)] || 0) * getNights(r.checkIn, r.checkOut), 0);
+  res.json({ gross, platformCutPercent: 15 });
 });
 
 app.get('/api/owner/:hotelId/metrics', (req, res) => {
   const hotelId = String(req.params.hotelId);
   const settings = hotelSettings[hotelId] || { campaignActive: false };
-  res.json({ impressions: 1234, clicks: 56, bookings: 7, cancellations: 1, avgPrice: 120, categoryAvgPrice: 140, stars: 4, campaignActive: Boolean(settings.campaignActive) });
+  const hotelRooms = rooms.filter((r) => String(r.hotelId) === hotelId);
+  const hotelReservations = reservations.filter((r) => String(r.hotelId) === hotelId);
+
+  const ownerIdx = findOwnerIndexByHotelId(hotelId);
+  const owner = ownerIdx !== -1 ? users[ownerIdx] : null;
+  const bookings = hotelReservations.filter((r) => r.status === 'confirmed').length;
+  const cancellations = 0; // no cancellation flow yet
+  const prices = hotelRooms.map((r) => Number(r.price)).filter((v) => Number.isFinite(v));
+  const avgPrice = prices.length ? Math.round(prices.reduce((s, v) => s + v, 0) / prices.length) : 0;
+
+  res.json({
+    impressions: 1234, // placeholder: no page-view tracking exists yet
+    clicks: 56, // placeholder: no page-view tracking exists yet
+    bookings,
+    cancellations,
+    avgPrice,
+    categoryAvgPrice: 140, // placeholder: no cross-hotel category comparison yet
+    stars: Number(owner?.stars) || null,
+    campaignActive: Boolean(settings.campaignActive)
+  });
 });
 
 app.post('/api/owner/:hotelId/campaign', (req, res) => {
@@ -670,6 +935,148 @@ app.post('/api/owner/:hotelId/campaign', (req, res) => {
 });
 
 app.post('/api/owner/:hotelId/cancel-policy', (req, res) => {
+  const hotelId = String(req.params.hotelId);
+  const payload = req.body || {};
+  hotelSettings[hotelId] = {
+    ...(hotelSettings[hotelId] || { autoAcceptBookings: true }),
+    cancelPolicy: {
+      freeCancel: Boolean(payload.freeCancel),
+      daysBefore: Number(payload.daysBefore) || 0,
+    },
+  };
+  saveState();
+  res.json({ ok: true, cancelPolicy: hotelSettings[hotelId].cancelPolicy });
+});
+
+function computeScore({ staff, location, facilities, cleanliness, comfort, value }) {
+  return Math.round(((staff + location + facilities + cleanliness * 2 + comfort * 2 + value) / 8) * 10) / 10;
+}
+
+function categoryAverages(list) {
+  const n = list.length;
+  if (!n) return null;
+  const avg = (key) => Math.round((list.reduce((s, r) => s + r.ratings[key], 0) / n) * 10) / 10;
+  return { staff: avg('staff'), location: avg('location'), facilities: avg('facilities'), cleanliness: avg('cleanliness'), comfort: avg('comfort'), value: avg('value') };
+}
+
+// Guest: submit a review after checkout
+app.post('/api/reservations/:id/review', (req, res) => {
+  const reservationId = Number(req.params.id);
+  const { userId, ratings, comment } = req.body || {};
+
+  const reservation = reservations.find((r) => r.id === reservationId);
+  if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
+
+  if (reservation.userId && String(reservation.userId) !== String(userId)) {
+    return res.status(403).json({ message: 'You can only review your own bookings.' });
+  }
+  if (reservation.status !== 'confirmed') {
+    return res.status(400).json({ message: 'Only confirmed bookings can be reviewed.' });
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  if (reservation.checkOut > today) {
+    return res.status(400).json({ message: 'You can only review after check-out.' });
+  }
+  if (reviews.some((r) => r.reservationId === reservationId)) {
+    return res.status(409).json({ message: 'You have already reviewed this stay.' });
+  }
+
+  const { staff, location, facilities, cleanliness, comfort, value } = ratings || {};
+  const vals = [staff, location, facilities, cleanliness, comfort, value];
+  if (vals.some((v) => !Number.isFinite(Number(v)) || Number(v) < 1 || Number(v) > 10)) {
+    return res.status(400).json({ message: 'All ratings must be between 1 and 10.' });
+  }
+  if (!comment || typeof comment !== 'string' || comment.trim().length < 10) {
+    return res.status(400).json({ message: 'Comment must be at least 10 characters.' });
+  }
+
+  const room = rooms.find((r) => r.id === reservation.roomId);
+  const hotelId = room ? normalizeHotelKey(room.hotelId || room.hotelName) : normalizeHotelKey(reservation.hotelId);
+
+  const r = {
+    staff: Number(staff), location: Number(location), facilities: Number(facilities),
+    cleanliness: Number(cleanliness), comfort: Number(comfort), value: Number(value),
+  };
+  const review = {
+    id: reviews.reduce((m, x) => Math.max(m, x.id), 0) + 1,
+    reservationId,
+    roomId: reservation.roomId,
+    hotelId,
+    userId: userId || null,
+    guestName: reservation.guestName || 'Guest',
+    ratings: r,
+    overallScore: computeScore(r),
+    comment: comment.trim(),
+    createdAt: new Date().toISOString(),
+  };
+  reviews.push(review);
+  saveState();
+  res.status(201).json(review);
+});
+
+// Public: get reviews for a room
+app.get('/api/rooms/:roomId/reviews', (req, res) => {
+  const roomId = Number(req.params.roomId);
+  const list = reviews
+    .filter((r) => r.roomId === roomId)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const n = list.length;
+  const avgScore = n ? Math.round((list.reduce((s, r) => s + r.overallScore, 0) / n) * 10) / 10 : null;
+  res.json({ reviews: list, avgScore, reviewCount: n, categoryAverages: categoryAverages(list) });
+});
+
+// Owner: all reviews across the hotel
+app.get('/api/owner/:hotelId/reviews', (req, res) => {
+  const hotelKey = normalizeHotelKey(req.params.hotelId);
+  const roomLookup = rooms.reduce((acc, room) => { acc[String(room.id)] = room.name; return acc; }, {});
+  const list = reviews
+    .filter((r) => normalizeHotelKey(r.hotelId) === hotelKey)
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map((r) => ({ ...r, roomName: roomLookup[String(r.roomId)] || `Room ${r.roomId}` }));
+  const n = list.length;
+  const avgScore = n ? Math.round((list.reduce((s, r) => s + r.overallScore, 0) / n) * 10) / 10 : null;
+  res.json({ reviews: list, avgScore, reviewCount: n, categoryAverages: categoryAverages(list) });
+});
+
+// Admin: directly override a hotel's star rating
+app.patch('/api/admin/hotels/:userId/stars', (req, res) => {
+  const userId = Number(req.params.userId);
+  const stars = Number(req.body?.stars);
+  if (!stars || stars < 1 || stars > 5) return res.status(400).json({ message: 'stars must be 1–5' });
+  const idx = users.findIndex((u) => u.id === userId && u.role === 'hotel_owner');
+  if (idx === -1) return res.status(404).json({ message: 'Hotel owner not found' });
+  users[idx].stars = stars;
+  saveState();
+  res.json({ ok: true, stars });
+});
+
+// Admin: list hotel owners pending approval
+app.get('/api/admin/pending-hotels', (req, res) => {
+  const pending = users
+    .filter((u) => u.role === 'hotel_owner' && u.approved === false)
+    .map((u) => ({
+      id: u.id,
+      email: u.email,
+      username: u.username,
+      hotelName: u.hotelName || '',
+      city: u.city || '',
+      createdAt: u.createdAt,
+    }));
+  res.json(pending);
+});
+
+// Admin: approve a hotel owner by email, optionally updating their star rating
+app.patch('/api/admin/approve-hotel', (req, res) => {
+  const { email, stars } = req.body || {};
+  if (!email) return res.status(400).json({ message: 'email required' });
+  const idx = users.findIndex(
+    (u) => u.role === 'hotel_owner' && String(u.email).toLowerCase() === String(email).toLowerCase()
+  );
+  if (idx === -1) return res.status(404).json({ message: 'Hotel owner not found' });
+  users[idx].approved = true;
+  if (stars && Number.isFinite(Number(stars)) && Number(stars) >= 1 && Number(stars) <= 5) {
+    users[idx].stars = Number(stars);
+  }
   saveState();
   res.json({ ok: true });
 });
