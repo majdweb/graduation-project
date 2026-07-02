@@ -333,7 +333,8 @@ app.get('/api/stats', (req, res) => {
   const hotelCount = approvedOwners.length;
   const cityCount = new Set(approvedOwners.map(u => u.city).filter(Boolean)).size;
   const bookingCount = reservations.filter(r => r.status === 'confirmed').length;
-  res.json({ hotels: hotelCount, cities: cityCount, bookings: bookingCount, rooms: rooms.length });
+  const roomCount = rooms.reduce((sum, r) => sum + (Number(r.amount) || 1), 0);
+  res.json({ hotels: hotelCount, cities: cityCount, bookings: bookingCount, rooms: roomCount });
 });
 
 // Public: rooms enriched with their hotel's name/city, used for home-search results
