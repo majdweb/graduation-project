@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./signUp.css";
 import { signUpUser, signInUser, verifySignUpCode } from "./services/auth";
 import { addRequest } from "./data/hotelRequests";
@@ -322,6 +322,7 @@ function SignUp() {
     return (
       <div className="page">
         <div className="overlay" />
+        <Link to="/" className="auth-back-btn">← Back</Link>
         <main className="card">
           <h1>Verification</h1>
           <p className="subtitle">One more step to finish creating your account.</p>
@@ -360,8 +361,8 @@ function SignUp() {
 
   return (
     <div className="page">
-    
       <div className="overlay" />
+      <Link to="/" className="auth-back-btn">← Back</Link>
       <main className="card">
         <h1>{isOwnerSignUp ? "Create hotel owner account" : "Create your account"}</h1>
         <p className="subtitle">

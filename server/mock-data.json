@@ -96,7 +96,7 @@
         "http://localhost:5001/public/1778263332404_0_6rx2q7"
       ],
       "approved": true,
-      "stars": 5
+      "stars": 3
     },
     {
       "id": 2,
@@ -345,6 +345,20 @@
       "checkOut": "2026-06-30",
       "breakfast": false,
       "status": "confirmed"
+    },
+    {
+      "id": 10,
+      "hotelId": "sheraton",
+      "roomId": 3,
+      "userId": 9,
+      "guestName": "Mohammad Mansour",
+      "guestEmail": "2dwdwa@gmail.com",
+      "guestPhone": "33605924",
+      "guests": 2,
+      "checkIn": "2025-02-13",
+      "checkOut": "2026-07-16",
+      "breakfast": true,
+      "status": "rejected"
     }
   ],
   "hotelSettings": {

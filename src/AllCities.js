@@ -1,7 +1,6 @@
 import './home.css';
 import './AllCities.css';
-import { Link, useNavigate } from 'react-router-dom';
-import { getCurrentRole, getCurrentUser, clearAuth } from './services/auth';
+import { useNavigate } from 'react-router-dom';
 import damascusImg from './assets/Damascus.jpg';
 import aleppoImg   from './assets/Aleppo.jpg';
 import tartousImg  from './assets/Tartous.jpg';
@@ -30,65 +29,14 @@ const ALL_CITIES = [
   { name: 'Bloudan',   description: 'A mountain summer resort', img: bloudanImg },
 ];
 
-const navLinks = [
-  { label: 'Home',                    href: '/' },
-  { label: 'Services',               href: '/services' },
-  { label: 'Hotels',                 href: '/hotels' },
-  { label: 'Facilities & Attractions', href: '/facilities-attractions' },
-  { label: 'About Us',               href: '/about' },
-];
-
 export default function AllCities() {
   const navigate = useNavigate();
-  const role = getCurrentRole();
-  const isAdmin = role === 'admin';
-  const isGuest  = role === 'guest';
-  const currentUser = isGuest ? getCurrentUser() : null;
-
-  const handleSignOut = () => { clearAuth(); navigate('/'); };
 
   return (
     <div className="home">
-      <nav className="navbar navbar-solid">
-        <div className="brand">Velvet Compass</div>
-        <ul className="nav-links">
-          {navLinks.map(link => (
-            <li key={link.href}><Link to={link.href}>{link.label}</Link></li>
-          ))}
-        </ul>
-        <div className="auth-buttons">
-          {isAdmin ? (
-            <>
-              <Link className="btn login" to="/admin">Admin Dashboard</Link>
-              <button type="button" className="btn signup" onClick={handleSignOut}>Sign Out</button>
-            </>
-          ) : isGuest ? (
-            <div className="owner-profile-slot">
-              <div className="owner-profile-menu" tabIndex={0}>
-                <button className="owner-profile-trigger" type="button" aria-label="Account profile">
-                  <span className="owner-profile-icon">👤</span>
-                </button>
-                <div className="owner-profile-dropdown">
-                  <p className="owner-profile-line"><strong>{currentUser?.username || 'Guest'}</strong></p>
-                  <p className="owner-profile-line">{currentUser?.email || ''}</p>
-                  <Link to="/my-bookings" className="owner-profile-dashboard-link">My Bookings</Link>
-                  <button type="button" className="owner-profile-signout-btn" onClick={handleSignOut}>Sign Out</button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <a className="btn login" href="/login">Login</a>
-              <a className="btn signup" href="/signup">Sign Up</a>
-            </>
-          )}
-        </div>
-      </nav>
-
       <div className="ac-hero">
         <h1 className="ac-hero-title">Explore All Cities</h1>
         <p className="ac-hero-sub">Choose a city and discover the best hotels waiting for you</p>
-        <Link to="/" className="ac-back-btn">← Back to Home</Link>
       </div>
 
       <div className="ac-grid-section">

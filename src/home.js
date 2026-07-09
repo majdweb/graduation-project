@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useSiteContent } from './useSiteContent';
 import { getHotels, getStats } from './services/hotels';
-import { getCurrentRole, getCurrentUser, clearAuth } from './services/auth';
+
 import hotelsStatImg  from './assets/verified hotels.jpg';
 import citiesStatImg  from './assets/city.jpg';
 import roomsStatImg     from './assets/rooms.jpg';
@@ -26,11 +26,6 @@ const TOP_CITIES = [
 export default function Home() {
   const content = useSiteContent();
   const navigate = useNavigate();
-
-  const role = getCurrentRole();
-  const isAdmin = role === 'admin';
-  const isGuest = role === 'guest';
-  const currentUser = isGuest ? getCurrentUser() : null;
 
   const [searchForm, setSearchForm] = useState({ destination: '', checkIn: '', checkOut: '', guests: 1 });
   const [featuredHotels, setFeaturedHotels] = useState([]);
@@ -70,31 +65,6 @@ export default function Home() {
     });
   };
 
-  const handleSignOut = () => {
-    clearAuth();
-    navigate('/');
-  };
-
-  useEffect(() => {
-    const navbar = document.querySelector(".navbar");
-    const hero = document.querySelector(".hero");
-
-    const handleScroll = () => {
-      const heroHeight = hero.offsetHeight;
-      if (window.scrollY === 0) {
-        navbar.classList.add("navbar-solid");
-      } else if (window.scrollY > 0 && window.scrollY < heroHeight - 80) {
-        navbar.classList.remove("navbar-solid");
-      } else {
-        navbar.classList.add("navbar-solid");
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   useEffect(() => {
     const els = document.querySelectorAll('[data-reveal]');
     const observer = new IntersectionObserver(
@@ -109,54 +79,8 @@ export default function Home() {
     return () => observer.disconnect();
   }, [featuredHotels]);
 
-  const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Services', href: '/services' },
-    { label: 'Hotels', href: '/hotels' },
-    { label: 'Facilities & Attractions', href: '/facilities-attractions' },
-    { label: 'About Us', href: '/about' }
-  ];
-
   return (
     <div className="home" id="home">
-      <nav className="navbar navbar-solid">
-        <div className="brand">{content.hero.brand}</div>
-        <ul className="nav-links">
-          {navLinks.map(link => (
-            <li key={link.href}>
-              <Link to={link.href}>{link.label}</Link>
-            </li>
-          ))}
-        </ul>
-        <div className="auth-buttons">
-          {isAdmin ? (
-            <>
-              <Link className="btn login" to="/admin">Admin Dashboard</Link>
-              <button type="button" className="btn signup" onClick={handleSignOut}>Sign Out</button>
-            </>
-          ) : isGuest ? (
-            <div className="owner-profile-slot">
-              <div className="owner-profile-menu" tabIndex={0}>
-                <button className="owner-profile-trigger" type="button" aria-label="Account profile">
-                  <span className="owner-profile-icon">👤</span>
-                </button>
-                <div className="owner-profile-dropdown">
-                  <p className="owner-profile-line"><strong>{currentUser?.username || 'Guest'}</strong></p>
-                  <p className="owner-profile-line">{currentUser?.email || ''}</p>
-                  <Link to="/my-bookings" className="owner-profile-dashboard-link">My Bookings</Link>
-                  <button type="button" className="owner-profile-signout-btn" onClick={handleSignOut}>Sign Out</button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <a className="btn login" href="/login">Login</a>
-              <a className="btn signup" href="/signup">Sign Up</a>
-            </>
-          )}
-        </div>
-      </nav>
-
       <header className="hero">
         <div className="hero-text">
           <h1>{content.hero.brand}</h1>

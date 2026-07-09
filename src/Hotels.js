@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import './room.css'
 import * as hotelsSvc from './services/hotels'
-import { getCurrentRole } from './services/auth'
-
 const SYRIA_CITIES = [
-  'Damascus', 'Aleppo', 'Homs', 'Hama', 'Latakia', 'Tartus',
-  'Deir ez-Zor', 'Raqqa', 'Idlib', 'Daraa', 'Sweida', 'Qamishli', 'Palmyra',
+  'Damascus', 'Aleppo', 'Homs', 'Hama', 'Latakia', 'Tartous',
+  'Idlib', 'Palmyra', 'Bloudan',
 ]
 
 const STAR_OPTIONS = [5, 4, 3, 2, 1]
@@ -14,13 +12,6 @@ const STAR_OPTIONS = [5, 4, 3, 2, 1]
 export default function Hotels() {
   const navigate = useNavigate()
   const location = useLocation()
-  const isOwner = getCurrentRole() === 'hotel_owner'
-
-  const handleBack = () => {
-    const fallback = isOwner ? '/ownerhome' : '/'
-    if (window.history.length > 1) navigate(-1)
-    else navigate(fallback, { replace: true })
-  }
 
   const [hotelsData, setHotelsData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -70,7 +61,6 @@ export default function Hotels() {
     <div className="sr-page">
       {/* Top bar */}
       <div className="sr-topbar">
-        <button type="button" className="back-btn" onClick={handleBack}>← Back</button>
         <div className="sr-topbar-center">
           <h1 className="sr-title">Hotels in Syria</h1>
         </div>

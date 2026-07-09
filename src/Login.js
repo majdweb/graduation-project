@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import "./signUp.css";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "", remember: false });
@@ -49,6 +49,7 @@ export default function Login() {
   return (
     <div className="page">
       <div className="overlay" />
+      <Link to="/" className="auth-back-btn">← Back</Link>
       <main className="card">
         <h1>Welcome back</h1>
         <p className="subtitle">Log in to continue</p>
@@ -91,9 +92,6 @@ export default function Login() {
           </button>
           <button type="button" className="link-button" onClick={() => navigate("/signup")}>
             Create an account
-          </button>
-          <button type="button" className="link-button" onClick={() => navigate("/owner/requests")}>
-            Submit / track a hotel request
           </button>
         </form>
       </main>

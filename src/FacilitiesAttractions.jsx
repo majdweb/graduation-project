@@ -1,25 +1,19 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useSiteContent, STORAGE_KEY } from "./useSiteContent";
 import { getCurrentRole } from "./services/auth";
 import "./FacilitiesAttractions.css";
+import "./room.css";
 
 const cityOptions = [
-  "All Syrian Cities",
   "Damascus",
   "Aleppo",
   "Homs",
-  "Latakia",
-  "Tartus",
   "Hama",
-  "Deir ez-Zor",
-  "Raqqa",
-  "Daraa",
-  "Sweida",
-  "Qamishli",
-  "Hasakah",
+  "Latakia",
+  "Tartous",
   "Idlib",
   "Palmyra",
+  "Bloudan",
 ];
 
 const difficultyOptions = ["Easy", "Medium", "Hard", "Extreme"];
@@ -175,44 +169,35 @@ export default function FacilitiesAttractions() {
   const [editingTrip, setEditingTrip] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
 
-  const [selectedCities, setSelectedCities] = useState(["All Syrian Cities"]);
+  const [selectedCity, setSelectedCity] = useState('');
   const [selectedDifficulties, setSelectedDifficulties] = useState([]);
   const [maxPrice, setMaxPrice] = useState(PRICE_MAX);
 
   const visibleTrips = useMemo(() => {
-    const activeCities = selectedCities.includes("All Syrian Cities")
-      ? cityOptions.filter((city) => city !== "All Syrian Cities")
-      : selectedCities;
-
     return trips.filter((trip) => {
-      const cityMatches = activeCities.length === 0 ? true : activeCities.includes(trip.city);
+      const cityMatches = !selectedCity || trip.city === selectedCity;
       const priceMatches = trip.price <= maxPrice;
       const difficultyMatches =
-        selectedDifficulties.length === 0 ? true : selectedDifficulties.includes(trip.difficulty);
+        selectedDifficulties.length === 0 || selectedDifficulties.includes(trip.difficulty);
       return cityMatches && priceMatches && difficultyMatches;
     });
-  }, [trips, selectedCities, selectedDifficulties, maxPrice]);
+  }, [trips, selectedCity, selectedDifficulties, maxPrice]);
 
-  const toggleCity = (city) => {
-    setSelectedCities((current) => {
-      if (city === "All Syrian Cities") {
-        return current.includes("All Syrian Cities") ? [] : ["All Syrian Cities"];
-      }
-
-      const withoutAll = current.filter((item) => item !== "All Syrian Cities");
-      return withoutAll.includes(city)
-        ? withoutAll.filter((item) => item !== city)
-        : [...withoutAll, city];
-    });
-  };
-
-  const toggleDifficulty = (difficulty) => {
-    setSelectedDifficulties((current) =>
-      current.includes(difficulty)
-        ? current.filter((item) => item !== difficulty)
-        : [...current, difficulty]
+  const toggleDifficulty = (d) =>
+    setSelectedDifficulties((cur) =>
+      cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d]
     );
+
+  const clearFilters = () => {
+    setSelectedCity('');
+    setSelectedDifficulties([]);
+    setMaxPrice(PRICE_MAX);
   };
+
+  const activeFilterCount =
+    (selectedCity ? 1 : 0) +
+    selectedDifficulties.length +
+    (maxPrice < PRICE_MAX ? 1 : 0);
 
   const handleAddTrip = (newTrip) => {
     const maxId = trips.reduce((m, t) => Math.max(m, t.id), 0);
@@ -236,9 +221,6 @@ export default function FacilitiesAttractions() {
     <div className="facilities-page">
       <header className="facilities-hero">
         <div className="facilities-hero-copy">
-          <Link to="/" className="back-link">
-            ← Back to home
-          </Link>
           <p className="eyebrow">Facilities & Attractions</p>
           <h1>Planned Trips</h1>
           <p className="hero-description">
@@ -314,17 +296,45 @@ export default function FacilitiesAttractions() {
         </section>
 
         <aside className="filters-panel">
-          <h2>Filters</h2>
+          <div className="sr-sidebar-header">
+            <span className="sr-sidebar-title">Filters</span>
+            {activeFilterCount > 0 && (
+              <button className="sr-clear-btn" onClick={clearFilters}>Clear all</button>
+            )}
+          </div>
 
-          <div className="filter-group">
-            <h3>Price</h3>
+          <div className="sr-filter-section">
+            <span className="sr-filter-label">City</span>
+            <select
+              className="sr-filter-input"
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+            >
+              <option value="">All cities</option>
+              {cityOptions.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
 
+          <div className="sr-filter-section">
+            <span className="sr-filter-label">Difficulty</span>
+            <div className="sr-star-row" style={{ flexWrap: 'wrap' }}>
+              {difficultyOptions.map((d) => (
+                <button
+                  key={d}
+                  className={`sr-star-btn${selectedDifficulties.includes(d) ? ' active' : ''}`}
+                  onClick={() => toggleDifficulty(d)}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="sr-filter-section">
+            <span className="sr-filter-label">Price — up to ${maxPrice}</span>
             <div className="price-slider-wrap">
-              <div className="price-slider-head">
-                <span className="price-slider-label">Up to</span>
-                <strong className="price-slider-value">${maxPrice}</strong>
-              </div>
-
               <input
                 className="price-slider"
                 type="range"
@@ -334,40 +344,11 @@ export default function FacilitiesAttractions() {
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
                 style={{ "--fill": `${pricePercent}%` }}
               />
-
               <div className="price-slider-foot">
                 <span>${PRICE_MIN}</span>
                 <span>${PRICE_MAX}</span>
               </div>
             </div>
-          </div>
-
-          <div className="filter-group">
-            <h3>Difficulty</h3>
-            {difficultyOptions.map((difficulty) => (
-              <label key={difficulty} className="filter-option">
-                <input
-                  type="checkbox"
-                  checked={selectedDifficulties.includes(difficulty)}
-                  onChange={() => toggleDifficulty(difficulty)}
-                />
-                <span>{difficulty}</span>
-              </label>
-            ))}
-          </div>
-
-          <div className="filter-group">
-            <h3>Cities</h3>
-            {cityOptions.map((city) => (
-              <label key={city} className="filter-option">
-                <input
-                  type="checkbox"
-                  checked={selectedCities.includes(city)}
-                  onChange={() => toggleCity(city)}
-                />
-                <span>{city}</span>
-              </label>
-            ))}
           </div>
         </aside>
       </main>

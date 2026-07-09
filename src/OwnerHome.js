@@ -4,102 +4,78 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { getCurrentUser, clearAuth } from './services/auth';
 
+const QUICK_ACTIONS = [
+  {
+    icon: '📊',
+    title: 'Dashboard',
+    desc: 'View bookings, manage reservations, and track your calendar.',
+    href: '/owner/dashboard',
+  },
+  {
+    icon: '🏨',
+    title: 'Hotel Info',
+    desc: 'Update your hotel details, address, star rating, and rooms.',
+    href: '/owner/hotel-info',
+  },
+  {
+    icon: '📋',
+    title: 'Hotel Requests',
+    desc: 'Submit requests to update your hotel listing or settings.',
+    href: '/owner/requests',
+  },
+  {
+    icon: '📈',
+    title: 'Revenue & Stats',
+    desc: 'See earnings, occupancy trends, and performance metrics.',
+    href: '/owner/stats',
+  },
+];
+
+const navLinks = [
+  { label: 'Services',         href: '/services' },
+  { label: 'Hotels',           href: '/hotels' },
+  { label: 'About Us',         href: '/about' },
+  { label: 'Owner Dashboard',  href: '/owner/dashboard' },
+];
+
 export default function OwnerHome() {
   const navigate = useNavigate();
 
   const ownerProfile = (() => {
     try {
       const user = getCurrentUser() || {};
-      const pendingRaw = sessionStorage.getItem('pending_signup_profile');
-      const pendingProfile = pendingRaw ? JSON.parse(pendingRaw) : {};
+      const pending = sessionStorage.getItem('pending_signup_profile');
+      const p = pending ? JSON.parse(pending) : {};
       return {
-        username: user.username || pendingProfile.username || 'Owner',
-        hotelName: user.hotelName || pendingProfile.hotelName || 'Your Hotel',
+        username:  user.username  || p.username  || 'Owner',
+        hotelName: user.hotelName || p.hotelName || 'Your Hotel',
       };
-    } catch (error) {
+    } catch {
       return { username: 'Owner', hotelName: 'Your Hotel' };
     }
   })();
 
-  const ownerStats = [
-    { label: "New bookings", value: "12", note: "+3 since yesterday" },
-    { label: "Pending approvals", value: "4", note: "Needs your review" },
-    { label: "Occupancy", value: "86%", note: "This week" },
-    { label: "Revenue", value: "$4.2k", note: "Projected this month" },
-  ];
-
   useEffect(() => {
-    const reviews = [
-      {
-        name: "Lina Mansour",
-        text: "The booking process was incredibly smooth and the interface feels premium.",
-        stars: 5,
-        img: "https://i.pravatar.cc/150?img=11"
-      },
-      {
-        name: "Hadi Nasser",
-        text: "I found great hotel deals that I couldn't find anywhere else. Highly recommended!",
-        stars: 4,
-        img: "https://i.pravatar.cc/150?img=22"
-      },
-      {
-        name: "Emily Carter",
-        text: "Fast, reliable, and beautifully designed. This platform is now my go‑to for hotel reservations.",
-        stars: 5,
-        img: "https://i.pravatar.cc/150?img=36"
-      }
-    ];
-
-    const container = document.getElementById("reviews-container-owner");
-    if (container) {
-      container.innerHTML = reviews.map(r => `
-        <div class="testimonial-card">
-          <div class="testimonial-user">
-            <img src="${r.img}" alt="${r.name}">
-            <h4>${r.name}</h4>
-          </div>
-          <p class="testimonial-text">${r.text}</p>
-          <div class="stars">${"★".repeat(r.stars)}${"☆".repeat(5 - r.stars)}</div>
-        </div>
-      `).join("");
-    }
-  }, []);
-
-  useEffect(() => {
-    const navbar = document.querySelector(".navbar");
-    const hero = document.querySelector(".hero");
-
-    const handleScroll = () => {
-      const heroHeight = hero.offsetHeight;
-
-      if (window.scrollY === 0) {
-        navbar.classList.add("navbar-solid");
-      } else if (window.scrollY > 0 && window.scrollY < heroHeight - 80) {
-        navbar.classList.remove("navbar-solid");
-      } else {
-        navbar.classList.add("navbar-solid");
-      }
+    const navbar = document.querySelector('.navbar');
+    const hero   = document.querySelector('.hero');
+    if (!navbar || !hero) return;
+    const onScroll = () => {
+      const h = hero.offsetHeight;
+      if (window.scrollY === 0)        navbar.classList.add('navbar-solid');
+      else if (window.scrollY < h - 80) navbar.classList.remove('navbar-solid');
+      else                              navbar.classList.add('navbar-solid');
     };
-
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', onScroll);
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  const navLinks = [
-    { label: 'Services', href: '/services' },
-    { label: 'Hotels', href: '/hotels' },
-    { label: 'About Us', href: '/about' },
-    { label: 'Owner Dashboard', href: '/owner/dashboard' }
-  ];
 
   const handleSignOut = () => {
     clearAuth();
     try {
       sessionStorage.removeItem('pending_signup_role');
       sessionStorage.removeItem('pending_signup_profile');
-    } catch (error) {}
+    } catch {}
     navigate('/');
   };
 
@@ -122,9 +98,9 @@ export default function OwnerHome() {
             <div className="owner-profile-dropdown">
               <p className="owner-profile-line"><strong>{ownerProfile.username}</strong></p>
               <p className="owner-profile-line">{ownerProfile.hotelName}</p>
-              <Link to="/owner/dashboard" className="owner-profile-dashboard-link">Dashboard</Link>
+              <Link to="/owner/dashboard"  className="owner-profile-dashboard-link">Dashboard</Link>
               <Link to="/owner/hotel-info" className="owner-profile-dashboard-link">Edit Hotel Info</Link>
-              <Link to="/owner/requests" className="owner-profile-dashboard-link">Hotel Requests</Link>
+              <Link to="/owner/requests"   className="owner-profile-dashboard-link">Hotel Requests</Link>
               <button type="button" className="owner-profile-signout-btn" onClick={handleSignOut}>Sign Out</button>
             </div>
           </div>
@@ -133,72 +109,40 @@ export default function OwnerHome() {
 
       <header className="hero">
         <div className="hero-text">
-          <p className="owner-kicker">Owner Portal</p>
-          <h1>Welcome back, hotel owner</h1>
-          <p>
-            Manage bookings, check pending requests, and keep your rooms updated from one place.
-          </p>
+          <p className="oh-kicker">Owner Portal</p>
+          <h1>Welcome back, {ownerProfile.username}</h1>
+          <p>{ownerProfile.hotelName} · Manage your hotel from one place</p>
           <div className="hero-buttons">
-            <a className="cta-btn" href="/owner/dashboard">Open Owner Dashboard</a>
-            <a href="#overview" className="cta-btn">View overview</a>
+            <Link className="cta-btn" to="/owner/dashboard">Open Dashboard →</Link>
           </div>
         </div>
-        <div className="hero-image owner-hero-panel">
-          <img src={heroImage} alt="Hero Image" />
-          <div className="owner-badge">Hotel owner mode</div>
+        <div className="hero-image">
+          <img src={heroImage} alt="Hotel" />
         </div>
       </header>
 
-      <section id="overview" className="services-section">
-        <h2 className="section-title">Today at a glance</h2>
-        <div className="services-grid">
-          {ownerStats.map((item) => (
-            <div key={item.label} className="service-card snow-card">
-              <div className="snow-icon">📊</div>
-              <h3>{item.label}</h3>
-              <p style={{ fontSize: 28, fontWeight: 700, margin: '10px 0 6px' }}>{item.value}</p>
-              <p>{item.note}</p>
-            </div>
+      <section className="oh-actions-section">
+        <div className="oh-actions-header">
+          <h2 className="oh-actions-title">Quick Access</h2>
+          <p className="oh-actions-sub">Everything you need to manage {ownerProfile.hotelName}</p>
+        </div>
+        <div className="oh-grid">
+          {QUICK_ACTIONS.map(action => (
+            <Link key={action.href} to={action.href} className="oh-card">
+              <span className="oh-card-icon">{action.icon}</span>
+              <h3 className="oh-card-title">{action.title}</h3>
+              <p className="oh-card-desc">{action.desc}</p>
+              <span className="oh-card-arrow">→</span>
+            </Link>
           ))}
         </div>
       </section>
 
-      <section id="services" className="services-section">
-        <h2 className="section-title">Our Premium Services</h2>
-        <div className="services-grid">
-          <div className="service-card snow-card">
-            <div className="snow-icon">🗂️</div>
-            <h3>Manage Rooms</h3>
-            <p>Add, edit, block, or remove rooms from the dashboard.</p>
-          </div>
-          <div className="service-card snow-card">
-            <div className="snow-icon">✅</div>
-            <h3>Approve Requests</h3>
-            <p>Review pending bookings and confirm them quickly.</p>
-          </div>
-          <div className="service-card snow-card">
-            <div className="snow-icon">📅</div>
-            <h3>Check Calendar</h3>
-            <p>See arrivals, departures, and in-house guests for each day.</p>
-          </div>
-          <div className="service-card snow-card">
-            <div className="snow-icon">⚙️</div>
-            <h3>Update Settings</h3>
-            <p>Control campaign, cancellation policy, and auto-accept rules.</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="testimonials" className="testimonials-section">
-        <h2 className="section-title">Owner tips</h2>
-        <div className="testimonials-grid" id="reviews-container-owner"></div>
-      </section>
-
-      <section id="contact" className="contact-section">
+      <section className="contact-section">
         <div className="contact-left">
           <h2>Need support?</h2>
-          <p>Use the owner dashboard for operations, or contact the team for account help.</p>
-          <a href="/owner/dashboard" className="contact-btn">Go to Owner Dashboard →</a>
+          <p>Contact the team for account help or platform issues.</p>
+          <a href="/contact" className="contact-btn">Go to Contact →</a>
         </div>
         <div className="contact-divider"></div>
         <div className="contact-right">
@@ -211,8 +155,8 @@ export default function OwnerHome() {
             <p>+1-800-555-0123</p>
           </div>
           <div className="contact-item">
-            <span className="icon">📍</span>
-            <p>Owner support desk, Booking City</p>
+            <span className="icon">⏰</span>
+            <p>Mon – Fri, 9 AM – 6 PM</p>
           </div>
         </div>
       </section>
