@@ -794,8 +794,39 @@
 .ha-profit { color: #2E9E6B; font-weight: 700; }
 .ha-platform { color: #B8762F; font-weight: 700; }
 .ha-stars { color: #E0A800; margin-left: 6px; font-size: 12px; }
+
+/* CHANGED BY AI (2026-07-13): please review — star-rating column in the admin analytics ranking
+   tables. Fixed width + always rendering 5 characters (filled + empty) keeps stars aligned across
+   rows regardless of rating; the filled stars get a warm gold color with a soft glow. */
+.ha-stars-col { text-align: center; white-space: nowrap; width: 110px; }
+.ha-star-rating { font-size: 15px; letter-spacing: 2px; }
+.ha-star-filled { color: #FFC107; text-shadow: 0 0 6px rgba(255, 193, 7, 0.65), 0 0 1px rgba(255, 193, 7, 0.9); }
+.ha-star-empty { color: var(--adm-border); }
 .ha-view-link { color: #6C8BC7; font-weight: 700; }
 .ha-hint { font-size: 12px; color: var(--adm-text-light); margin: 12px 0 0; }
+
+/* CHANGED BY AI (2026-07-13): please review — hotel room-type drill-down + inline review
+   moderation (view/delete) in the admin analytics ranking tables. */
+.ha-room-list { display: flex; flex-direction: column; gap: 10px; }
+.ha-room-card {
+  background: var(--adm-surface2); border: 1px solid var(--adm-border);
+  border-radius: 10px; padding: 12px 14px;
+}
+.ha-room-card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.ha-room-card-main { display: flex; flex-direction: column; gap: 2px; }
+.ha-review-list { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--adm-border); display: flex; flex-direction: column; gap: 12px; }
+.ha-review-item { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: 8px; padding: 10px 12px; }
+.ha-review-item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.ha-review-item-name { font-weight: 600; font-size: 13px; flex: 1; color: var(--adm-text); }
+.ha-review-item-score { background: #2a3d66; color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 12px; font-weight: 700; }
+.ha-review-item-date { font-size: 11px; color: var(--adm-text-light); }
+.ha-review-item-comment { font-size: 13px; color: var(--adm-text); line-height: 1.5; margin: 0; }
+.ha-review-delete-btn {
+  background: none; border: 1px solid var(--adm-border); border-radius: 6px;
+  cursor: pointer; font-size: 13px; padding: 2px 8px; line-height: 1.6;
+}
+.ha-review-delete-btn:hover { background: #fee2e2; border-color: #fca5a5; }
+.ha-review-delete-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* detail panel */
 .ha-detail-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }

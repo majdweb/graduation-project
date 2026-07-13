@@ -60,6 +60,33 @@ function overlapsReservation(day, reservation) {
   return isWithinRange(day, start, end);
 }
 
+// Collapses a day-by-day availability list into contiguous "Blocked" date ranges, so the UI can
+// show "Jul 20 -> Jul 22" instead of three separate days.
+function groupBlockedRanges(days) {
+  const blockedDates = days.filter((d) => d.status === 'Blocked').map((d) => d.date).sort();
+  const ranges = [];
+  let rangeStart = null;
+  let prevDate = null;
+  for (const dateStr of blockedDates) {
+    if (rangeStart === null) {
+      rangeStart = dateStr;
+      prevDate = dateStr;
+      continue;
+    }
+    const expectedNext = new Date(`${prevDate}T00:00:00`);
+    expectedNext.setDate(expectedNext.getDate() + 1);
+    if (dateStr === toDateKey(expectedNext)) {
+      prevDate = dateStr;
+    } else {
+      ranges.push({ from: rangeStart, to: prevDate });
+      rangeStart = dateStr;
+      prevDate = dateStr;
+    }
+  }
+  if (rangeStart !== null) ranges.push({ from: rangeStart, to: prevDate });
+  return ranges;
+}
+
 export default function OwnerDashboard() {
   const hotelId = useMemo(() => {
     const envHotelId = process.env.REACT_APP_HOTEL_ID;
@@ -74,7 +101,7 @@ export default function OwnerDashboard() {
   const [campaignActive, setCampaignActive] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [reservations, setReservations] = useState([]);
-  const [cancelPolicy, setCancelPolicy] = useState({ freeCancel: true, daysBefore: 2 });
+  const [cancelPolicy, setCancelPolicy] = useState({ freeCancel: true, daysBefore: 2, feeType: 'percentage', feeValue: 20 });
   const [breakfastAvailable, setBreakfastAvailable] = useState(false);
   const [breakfastPrice, setBreakfastPrice] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -95,6 +122,12 @@ export default function OwnerDashboard() {
   const [photoPreviews, setPhotoPreviews] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [existingPhotoUrls, setExistingPhotoUrls] = useState([]);
+  const [availabilityRoomType, setAvailabilityRoomType] = useState(null);
+  const [availabilityUnits, setAvailabilityUnits] = useState([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState('');
+  const [blockForm, setBlockForm] = useState({});
+  const [blockSavingId, setBlockSavingId] = useState(null);
   const [addSaving, setAddSaving] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(new Date()));
   const [calendarDayOpen, setCalendarDayOpen] = useState(false);
@@ -255,9 +288,13 @@ export default function OwnerDashboard() {
     setAddRoomOpen(true);
   }
 
-  function openEditRoom(r) {
+  // CHANGED BY AI (2026-07-13): please review — was seeding existingPhotoUrls from r.photos (at
+  // most a single primaryImageUrl string, no id), which made deleting an existing photo
+  // impossible. Now fetches the room type's full image list (with real ids) so removal can
+  // actually be persisted.
+  async function openEditRoom(r) {
     setSelectedRoomId(r.id || null);
-    setExistingPhotoUrls(Array.isArray(r.photos) ? r.photos : []);
+    setExistingPhotoUrls([]);
     setPhotoPreviews([]);
     setPhotos([]);
     setRoomName(r.name || '');
@@ -267,6 +304,10 @@ export default function OwnerDashboard() {
     setRoomStatus(r.status || 'draft');
     setVariants(Array.isArray(r.variants) ? r.variants.map(v => ({ name: v.name || '', amount: Number(v.amount) || Number(v.capacity) || 1, price: Number(v.price) || Number(v.priceDelta) || 0 })) : []);
     setAddRoomOpen(true);
+    if (r.id) {
+      const images = await ownerSvc.getRoomTypeImages(hotelId, r.id).catch(() => []);
+      setExistingPhotoUrls(images);
+    }
   }
 
   function closeAddRoom() {
@@ -277,6 +318,79 @@ export default function OwnerDashboard() {
     setExistingPhotoUrls([]);
     setSelectedRoomId(null);
     setAddRoomOpen(false);
+  }
+
+  function availabilityWindow() {
+    const from = new Date();
+    const to = new Date(from);
+    to.setDate(to.getDate() + 90);
+    return { from: toDateKey(from), to: toDateKey(to) };
+  }
+
+  async function openAvailability(room) {
+    setAvailabilityRoomType(room);
+    setAvailabilityUnits([]);
+    setAvailabilityError('');
+    setBlockForm({});
+    setAvailabilityLoading(true);
+    try {
+      const units = await ownerSvc.getRoomUnits(hotelId, room.id);
+      const { from, to } = availabilityWindow();
+      const withRanges = await Promise.all(units.map(async (unit) => {
+        const days = await ownerSvc.getRoomAvailability(hotelId, room.id, unit.id, from, to).catch(() => []);
+        return { ...unit, blockedRanges: groupBlockedRanges(days) };
+      }));
+      setAvailabilityUnits(withRanges);
+    } catch (err) {
+      setAvailabilityError(err.message || 'Unable to load room availability.');
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  }
+
+  function closeAvailability() {
+    setAvailabilityRoomType(null);
+    setAvailabilityUnits([]);
+    setAvailabilityError('');
+    setBlockForm({});
+  }
+
+  function updateBlockField(unitId, field, value) {
+    setBlockForm((prev) => ({ ...prev, [unitId]: { ...prev[unitId], [field]: value } }));
+  }
+
+  async function refreshUnitAvailability(unitId) {
+    const { from, to } = availabilityWindow();
+    const days = await ownerSvc.getRoomAvailability(hotelId, availabilityRoomType.id, unitId, from, to).catch(() => []);
+    setAvailabilityUnits((prev) => prev.map((u) => (u.id === unitId ? { ...u, blockedRanges: groupBlockedRanges(days) } : u)));
+  }
+
+  async function handleBlockDates(unitId) {
+    const form = blockForm[unitId] || {};
+    if (!form.from || !form.to) { alert('Pick both a from and to date.'); return; }
+    if (form.from > form.to) { alert('The "to" date must be on or after the "from" date.'); return; }
+    setBlockSavingId(unitId);
+    try {
+      await ownerSvc.setRoomAvailability(hotelId, availabilityRoomType.id, unitId, { from: form.from, to: form.to, status: 'Blocked' });
+      await refreshUnitAvailability(unitId);
+      setBlockForm((prev) => ({ ...prev, [unitId]: { from: '', to: '' } }));
+    } catch (err) {
+      alert('Unable to block these dates: ' + (err.message || err));
+    } finally {
+      setBlockSavingId(null);
+    }
+  }
+
+  async function handleUnblockRange(unitId, range) {
+    setBlockSavingId(unitId);
+    try {
+      await ownerSvc.setRoomAvailability(hotelId, availabilityRoomType.id, unitId, { from: range.from, to: range.to, status: 'Free' });
+      await refreshUnitAvailability(unitId);
+    } catch (err) {
+      alert('Unable to unblock these dates: ' + (err.message || err));
+    } finally {
+      setBlockSavingId(null);
+    }
   }
 
   function handlePhotoChange(e) {
@@ -293,8 +407,18 @@ export default function OwnerDashboard() {
     e.target.value = '';
   }
 
-  function removeExistingPhoto(idx) {
-    setExistingPhotoUrls((prev) => prev.filter((_, i) => i !== idx));
+  // CHANGED BY AI (2026-07-13): please review — now deletes the photo on the backend right away
+  // (existingPhotoUrls entries carry real image ids now, see openEditRoom) instead of only
+  // removing it from local state, which never actually persisted before.
+  async function removeExistingPhoto(idx) {
+    const photo = existingPhotoUrls[idx];
+    if (!photo || !selectedRoomId) return;
+    try {
+      await ownerSvc.deleteRoomTypePhoto(hotelId, selectedRoomId, photo.id);
+      setExistingPhotoUrls((prev) => prev.filter((_, i) => i !== idx));
+    } catch (err) {
+      alert('Unable to remove photo: ' + (err.message || err));
+    }
   }
 
   function removeNewPhoto(idx) {
@@ -326,27 +450,6 @@ export default function OwnerDashboard() {
     if (roomPrice < 0) return alert('Price must be >= 0');
     setAddSaving(true);
     try {
-      // start with existing photos (for edit) so we preserve them unless replaced
-      let photoUrls = Array.isArray(existingPhotoUrls) ? [...existingPhotoUrls] : [];
-      if (photos.length) {
-        // request signed upload URLs
-        const filesMeta = photos.map(f => ({ name: f.name, type: f.type, size: f.size }));
-        const uploadInfo = await ownerSvc.getUploadUrls(hotelId, filesMeta).catch(() => null);
-        if (uploadInfo && Array.isArray(uploadInfo.urls)) {
-          // upload files to each signed URL
-          for (let i = 0; i < photos.length; i++) {
-            const file = photos[i];
-            const info = uploadInfo.urls[i];
-            try {
-              await fetch(info.uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-              photoUrls.push(info.publicUrl || info.url || info.filename);
-            } catch (err) {
-              console.warn('Upload failed for', file.name, err);
-            }
-          }
-        }
-      }
-
       const payload = {
         hotelId,
         name: roomName,
@@ -354,16 +457,33 @@ export default function OwnerDashboard() {
         capacity: Number(roomCapacity) || 1,
         price: Number(roomPrice) || 0,
         variants: variants.map(v => ({ name: v.name, amount: Number(v.amount) || 1, price: Number(v.price) || 0 })),
-        photos: photoUrls,
         status: selectedRoomId ? roomStatus : 'draft'
       };
 
+      let roomTypeId = selectedRoomId;
       if (selectedRoomId) {
         // update existing room
-        await ownerSvc.updateRoom(selectedRoomId, payload);
+        await ownerSvc.updateRoom(hotelId, selectedRoomId, payload);
       } else {
         // create new
-        await ownerSvc.createRoom(hotelId, payload);
+        const created = await ownerSvc.createRoom(hotelId, payload);
+        roomTypeId = created?.id;
+      }
+
+      // CHANGED BY AI (2026-07-13): please review — new photos are now uploaded directly (real
+      // multipart upload) once the room type exists, instead of the old mock signed-url flow
+      // that never actually saved anything. The first photo becomes primary only if the room
+      // type has no primary image yet.
+      if (photos.length && roomTypeId) {
+        const hasPrimary = existingPhotoUrls.some((p) => p.isPrimary);
+        for (let i = 0; i < photos.length; i += 1) {
+          const isPrimary = !hasPrimary && i === 0;
+          try {
+            await ownerSvc.uploadRoomTypePhoto(hotelId, roomTypeId, photos[i], { isPrimary });
+          } catch (err) {
+            console.warn('Upload failed for', photos[i].name, err);
+          }
+        }
       }
 
       // refresh list
@@ -439,6 +559,8 @@ export default function OwnerDashboard() {
           setCancelPolicy({
             freeCancel: Boolean(settings.cancelPolicy.freeCancel),
             daysBefore: Number(settings.cancelPolicy.daysBefore) || 0,
+            feeType: settings.cancelPolicy.feeType === 'flat' ? 'flat' : 'percentage',
+            feeValue: Number(settings.cancelPolicy.feeValue) || 0,
           });
         }
         if (settings?.breakfast) {
@@ -499,7 +621,10 @@ export default function OwnerDashboard() {
           </Link>
         </div>
         <p className="muted">Overview of your hotel's performance and settings</p>
-        {(() => { const s = Number(getCurrentUser()?.stars) || 0; return s > 0 ? (
+        {/* CHANGED BY AI (2026-07-13): please review — was reading getCurrentUser()?.stars, a
+            field never populated anywhere in the real-backend-integrated app; now reads the
+            hotel's actual starRating via getMetrics(). */}
+        {(() => { const s = Number(metrics?.stars) || 0; return s > 0 ? (
           <p style={{ margin: '4px 0 0', fontSize: 22, color: '#f59e0b', letterSpacing: 3 }}>
             {'★'.repeat(s)}{'☆'.repeat(5 - s)}
             <span style={{ fontSize: 13, color: '#6b7280', letterSpacing: 0, marginLeft: 8 }}>{s}-star hotel</span>
@@ -790,13 +915,8 @@ export default function OwnerDashboard() {
                 )}
               </div>
               <div className="room-actions">
-                <button onClick={async () => {
-                    try {
-                      await ownerSvc.updateRoom(r.id, { bookable: !r.bookable });
-                      setRooms(rs => rs.map(x => x.id === r.id ? { ...x, bookable: !x.bookable } : x));
-                    } catch (err) { alert('Unable to update room: ' + err.message); }
-                  }} className={`booking-toggle ${r.bookable ? 'on' : 'blocked'}`}>
-                  {r.bookable ? 'Allow Booking' : 'Blocked'}
+                <button onClick={() => openAvailability(r)} className="booking-toggle on">
+                  Manage Availability
                 </button>
               </div>
             </div>
@@ -865,9 +985,37 @@ export default function OwnerDashboard() {
             <input type="checkbox" checked={cancelPolicy.freeCancel} onChange={(e) => setCancelPolicy(p => ({ ...p, freeCancel: e.target.checked }))} /> Free cancellation
           </label>
           <label style={{ marginLeft: 12 }}>
-            Days before booking required:
+            Days before check-in required:
             <input type="number" min={0} value={cancelPolicy.daysBefore} onChange={(e) => setCancelPolicy(p => ({ ...p, daysBefore: Number(e.target.value) }))} />
           </label>
+        </div>
+        {/* CHANGED BY AI (2026-07-13): please review — new fields for the real cancellation fee
+            (charged when a cancellation doesn't qualify as free, or when free cancellation is
+            turned off entirely). Previously this whole section posted to a mock endpoint. */}
+        <div className="cancel-row" style={{ marginTop: 10 }}>
+          <label>
+            Otherwise charge:
+            <select
+              value={cancelPolicy.feeType}
+              onChange={(e) => setCancelPolicy(p => ({ ...p, feeType: e.target.value }))}
+              style={{ marginLeft: 6 }}
+            >
+              <option value="percentage">% of booking total</option>
+              <option value="flat">Flat amount ($)</option>
+            </select>
+          </label>
+          <label style={{ marginLeft: 12 }}>
+            {cancelPolicy.feeType === 'flat' ? 'Amount ($):' : 'Percentage (%):'}
+            <input
+              type="number"
+              min={0}
+              step={cancelPolicy.feeType === 'flat' ? 1 : 0.5}
+              value={cancelPolicy.feeValue}
+              onChange={(e) => setCancelPolicy(p => ({ ...p, feeValue: Number(e.target.value) }))}
+            />
+          </label>
+        </div>
+        <div className="cancel-row" style={{ marginTop: 10 }}>
           <button className="save-btn" onClick={async () => {
             try {
               await ownerSvc.updateCancelPolicy(hotelId, cancelPolicy);
@@ -945,8 +1093,8 @@ export default function OwnerDashboard() {
               <input type="file" accept="image/*" multiple onChange={handlePhotoChange} />
               <div className="room-photo-preview-list">
                 {existingPhotoUrls.map((p, i) => (
-                  <div key={`existing-${i}`} className="room-photo-preview-item">
-                    <img src={p} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div key={p.id} className="room-photo-preview-item">
+                    <img src={p.url} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <button
                       type="button"
                       className="room-photo-remove"
@@ -994,7 +1142,7 @@ export default function OwnerDashboard() {
                     onClick={async () => {
                       if (!window.confirm(`Delete room "${roomName || 'room'}"? This cannot be undone.`)) return;
                       try {
-                        await ownerSvc.deleteRoom(selectedRoomId);
+                        await ownerSvc.deleteRoom(hotelId, selectedRoomId);
                         setRooms(rs => rs.filter(x => x.id !== selectedRoomId));
                         closeAddRoom();
                       } catch (err) {
@@ -1008,6 +1156,92 @@ export default function OwnerDashboard() {
                 <button className="campaign-back room-form-actions-btn" onClick={closeAddRoom} disabled={addSaving}>Cancel</button>
                 <button className="campaign-next room-form-actions-btn" onClick={saveRoom} disabled={addSaving}>{addSaving ? 'Saving...' : 'Save'}</button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {availabilityRoomType && (
+        <div className="campaign-modal-overlay" onClick={closeAvailability}>
+          <div className="campaign-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="campaign-modal-header">
+              <h3>Availability — {availabilityRoomType.name}</h3>
+              <button className="close-modal" onClick={closeAvailability} aria-label="Close">×</button>
+            </div>
+
+            <p className="muted small" style={{ marginBottom: 12 }}>
+              Block a specific room for maintenance or other reasons over a date range, without affecting the other rooms of this type.
+            </p>
+
+            {availabilityLoading && <p className="muted small">Loading rooms...</p>}
+            {availabilityError && <p className="od-error" style={{ color: "#9b1c1c" }}>Error: {availabilityError}</p>}
+
+            {!availabilityLoading && availabilityUnits.length === 0 && !availabilityError && (
+              <p className="muted small">This room type has no individual rooms yet.</p>
+            )}
+
+            {availabilityUnits.map((unit) => (
+              <div key={unit.id} style={{ borderTop: '1px solid #e5e7eb', paddingTop: 12, marginTop: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <strong>Room {unit.roomNumber}</strong>
+                  <span className="muted small">{unit.status}</span>
+                </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                  {unit.blockedRanges.length === 0 ? (
+                    <span className="muted small">No blocked dates</span>
+                  ) : (
+                    unit.blockedRanges.map((range, i) => (
+                      <span key={i} className="muted small" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#f3f4f6', borderRadius: 6, padding: '4px 8px' }}>
+                        {range.from} → {range.to}
+                        <button
+                          type="button"
+                          disabled={blockSavingId === unit.id}
+                          onClick={() => handleUnblockRange(unit.id, range)}
+                          style={{ border: 'none', background: 'none', color: '#9b1c1c', cursor: 'pointer', fontWeight: 600 }}
+                        >
+                          Unblock
+                        </button>
+                      </span>
+                    ))
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginTop: 8, flexWrap: 'wrap' }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13 }}>
+                    From
+                    <input
+                      type="date"
+                      value={blockForm[unit.id]?.from || ''}
+                      onChange={(e) => updateBlockField(unit.id, 'from', e.target.value)}
+                      style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 6 }}
+                    />
+                  </label>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13 }}>
+                    To
+                    <input
+                      type="date"
+                      min={blockForm[unit.id]?.from || undefined}
+                      value={blockForm[unit.id]?.to || ''}
+                      onChange={(e) => updateBlockField(unit.id, 'to', e.target.value)}
+                      style={{ padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 6 }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="cta"
+                    disabled={blockSavingId === unit.id}
+                    onClick={() => handleBlockDates(unit.id)}
+                    style={{ height: 36 }}
+                  >
+                    {blockSavingId === unit.id ? 'Saving...' : 'Block these dates'}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="campaign-back room-form-actions-btn" onClick={closeAvailability}>Close</button>
             </div>
           </div>
         </div>

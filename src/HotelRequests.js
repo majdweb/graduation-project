@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  getRequests,
-  subscribeRequests,
-  approveRequest,
-  rejectRequest,
+  getAllHotelRequests,
+  approveHotelRequest,
+  rejectHotelRequest,
   REQUEST_FIELDS,
-} from './data/hotelRequests';
-import { approveHotel } from './services/hotels';
+} from './services/hotelRequests';
 
 function StatusBadge({ status }) {
   const map = {
@@ -112,9 +110,16 @@ function RequestCard({ req, onApprove, onReject, history }) {
 }
 
 export default function HotelRequests() {
-  const [requests, setRequests] = useState(() => getRequests());
+  const [requests, setRequests] = useState([]);
+  const [loadError, setLoadError] = useState('');
 
-  useEffect(() => subscribeRequests(setRequests), []);
+  function load() {
+    return getAllHotelRequests()
+      .then(setRequests)
+      .catch((err) => setLoadError(err.message || 'Unable to load hotel requests.'));
+  }
+
+  useEffect(() => { load(); }, []);
 
   const pending = useMemo(() => requests.filter((r) => r.status === 'pending'), [requests]);
   const history = useMemo(
@@ -125,20 +130,29 @@ export default function HotelRequests() {
     [requests]
   );
 
+  // The backend creates or updates the real hotel (whichever this request needed) and only
+  // marks it Approved if that succeeds — so a failed approval no longer looks like a success.
   const handleApprove = async (id) => {
-    const req = requests.find((r) => r.id === id);
-    approveRequest(id);
-    if (req?.ownerEmail) {
-      try {
-        await approveHotel(req.ownerEmail, req.changes?.stars);
-      } catch (e) {
-        console.warn('Server approval failed:', e.message);
-      }
+    try {
+      await approveHotelRequest(id);
+      await load();
+    } catch (e) {
+      alert('Could not approve this request: ' + (e.message || e));
+    }
+  };
+
+  const handleReject = async (id, reason) => {
+    try {
+      await rejectHotelRequest(id, reason);
+      await load();
+    } catch (e) {
+      alert('Could not reject this request: ' + (e.message || e));
     }
   };
 
   return (
     <div className="hrq-root">
+      {loadError && <p className="admin-stat-sub" style={{ color: '#e05555' }}>{loadError}</p>}
       <div className="admin-stats-row">
         <div className="admin-stat-card">
           <div className="admin-stat-label">Pending</div>
@@ -169,7 +183,7 @@ export default function HotelRequests() {
         ) : (
           <div className="hrq-list">
             {pending.map((r) => (
-              <RequestCard key={r.id} req={r} onApprove={handleApprove} onReject={rejectRequest} />
+              <RequestCard key={r.id} req={r} onApprove={handleApprove} onReject={handleReject} />
             ))}
           </div>
         )}

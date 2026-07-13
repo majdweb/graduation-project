@@ -32,8 +32,8 @@ function ReviewsModal({ room, onClose }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getRoomReviews(room.id).then(setData).catch(() => setData(null)).finally(() => setLoading(false));
-  }, [room.id]);
+    getRoomReviews(room.hotelId, room.id).then(setData).catch(() => setData(null)).finally(() => setLoading(false));
+  }, [room.hotelId, room.id]);
 
   return (
     <div className="rv-overlay" onClick={onClose}>

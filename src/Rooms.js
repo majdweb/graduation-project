@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import './room.css'
-import { searchRooms } from './services/hotels'
+import { getRoomTypesForHotel } from './services/hotels'
 import { getRoomReviews } from './services/guest'
 import { getCurrentRole } from './services/auth'
 import PriceRangeSlider from './PriceRangeSlider'
@@ -31,11 +31,11 @@ function ReviewsModal({ room, onClose }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getRoomReviews(room.id)
+    getRoomReviews(room.hotelId, room.id)
       .then(setData)
       .catch(() => setData(null))
       .finally(() => setLoading(false))
-  }, [room.id])
+  }, [room.hotelId, room.id])
 
   return (
     <div className="rv-overlay" onClick={onClose}>
@@ -124,14 +124,16 @@ export default function Rooms() {
 
   useEffect(() => {
     let mounted = true
+    const hid = hotel?.hotelId
+    if (!hid) { setAllRooms([]); setLoading(false); return }
     setLoading(true)
     setError('')
-    searchRooms({ checkIn, checkOut })
+    getRoomTypesForHotel(hid)
       .then(data  => { if (mounted) setAllRooms(Array.isArray(data) ? data : []) })
       .catch(err  => { if (mounted) setError(err.message || 'Unable to load rooms.') })
       .finally(() => { if (mounted) setLoading(false) })
     return () => { mounted = false }
-  }, [checkIn, checkOut])
+  }, [hotel?.hotelId])
 
   // Rooms that belong to this hotel
   const hotelKey = String(

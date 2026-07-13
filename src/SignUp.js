@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./signUp.css";
 import { signUpUser, signInUser, verifySignUpCode } from "./services/auth";
-import { addRequest } from "./data/hotelRequests";
+import { submitHotelRequest } from "./services/hotelRequests";
 import { fileToResizedDataUrl } from "./data/imageUtil";
 
 const initialForm = {
@@ -81,6 +81,9 @@ function SignUp() {
   const [loading, setLoading] = useState(false);
   const [legalModal, setLegalModal] = useState(null); // 'terms' | 'privacy' | null
   const [verifying, setVerifying] = useState(false);
+  // Stashed here because submitting a hotel request needs a real auth token, which we only have
+  // after the owner is actually signed in (post-verification) — by then `form` has been reset.
+  const [pendingOwnerRequest, setPendingOwnerRequest] = useState(null);
 
   const passwordRules = useMemo(
     () => ({
@@ -207,27 +210,15 @@ function SignUp() {
       payload.city = form.city.trim();
       payload.stars = form.stars || null;
 
-      // Register a "new hotel" request for the admin to approve/reject.
-      // This is stored client-side (JSON in localStorage), independent of the backend.
-      try {
-        addRequest({
-          type: "create",
-          hotelId: "",
-          ownerName: payload.username,
-          ownerEmail: payload.email,
-          changes: {
-            hotelName: payload.hotelName,
-            city: payload.city,
-            phoneNumber: payload.phoneNumber,
-            stars: form.stars || undefined,
-          },
-          document: doc,
-        });
-      } catch (err) {
-        setSubmitError(err.message || "Could not submit the hotel request.");
-        setLoading(false);
-        return;
-      }
+      // Submitting the actual request happens later, once we have a real auth token (see
+      // handleVerifyCodeSubmit) — for now just remember what to submit.
+      setPendingOwnerRequest({
+        hotelName: payload.hotelName,
+        city: payload.city,
+        phoneNumber: payload.phoneNumber,
+        stars: form.stars || null,
+        document: doc,
+      });
     }
 
     try {
@@ -305,6 +296,21 @@ function SignUp() {
         };
         localStorage.setItem("mock_auth_user", JSON.stringify(next));
         setVerificationPassword("");
+
+        // Now that we have a real auth token, actually submit the hotel request. A failure here
+        // shouldn't block the account itself — the owner can resubmit later from their own
+        // requests page.
+        if (pendingOwnerRequest) {
+          try {
+            await submitHotelRequest({ type: "create", ...pendingOwnerRequest });
+          } catch (reqErr) {
+            setVerificationNotice(
+              "Account created, but we couldn't submit your hotel request. Please submit it again from your owner dashboard."
+            );
+          }
+          setPendingOwnerRequest(null);
+        }
+
         navigate(res?.user?.role === "hotel_owner" ? "/ownerhome" : "/");
       } catch (signInErr) {
         setVerificationNotice(

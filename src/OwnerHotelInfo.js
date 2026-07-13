@@ -19,10 +19,11 @@ export default function OwnerHotelInfo() {
     if (envHotelId) return envHotelId;
 
     const user = getCurrentUser() || {};
-    return String(user.hotelId || user.hotelName || user.id || 1);
+    return user.hotelId ? String(user.hotelId) : null;
   }, []);
 
   const [form, setForm] = useState(initialForm);
+  const [stars, setStars] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -36,6 +37,10 @@ export default function OwnerHotelInfo() {
     let mounted = true;
 
     async function loadProfile() {
+      if (!hotelId) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       setError("");
       try {
@@ -48,7 +53,8 @@ export default function OwnerHotelInfo() {
           phoneNumber: String(profile?.phoneNumber || ""),
           description: String(profile?.description || ""),
         });
-        setExistingPhotoUrls(Array.isArray(profile?.photos) ? profile.photos : []);
+        setExistingPhotoUrls(Array.isArray(profile?.photos) ? profile.photos : []); // [{id, url, isPrimary}]
+        setStars(Number(profile?.starRating) || 0);
       } catch (err) {
         if (!mounted) return;
         setError(err.message || "Unable to load hotel profile.");
@@ -97,9 +103,20 @@ export default function OwnerHotelInfo() {
     event.target.value = "";
   }
 
-  function removeExistingPhoto(index) {
-    setExistingPhotoUrls((prev) => prev.filter((_, i) => i !== index));
-    setSuccess("");
+  // CHANGED BY AI (2026-07-13): please review — now deletes the photo on the backend right away
+  // instead of only removing it from local state (which never actually persisted before, since
+  // the old upload flow never registered any images with the backend to begin with).
+  async function removeExistingPhoto(index) {
+    const photo = existingPhotoUrls[index];
+    if (!photo) return;
+    setError("");
+    try {
+      await ownerSvc.deleteHotelPhoto(hotelId, photo.id);
+      setExistingPhotoUrls((prev) => prev.filter((_, i) => i !== index));
+      setSuccess("");
+    } catch (err) {
+      setError(err.message || "Unable to remove photo.");
+    }
   }
 
   function removeNewPhoto(index) {
@@ -122,21 +139,14 @@ export default function OwnerHotelInfo() {
     setError("");
     setSuccess("");
     try {
-      let photoUrls = [...existingPhotoUrls];
+      // CHANGED BY AI (2026-07-13): please review — new photos are now uploaded directly (real
+      // multipart upload, persisted immediately) instead of going through the old mock signed-url
+      // flow. The first photo becomes the hotel's primary/card image only if none is set yet.
       if (newPhotos.length) {
-        const filesMeta = newPhotos.map((file) => ({ name: file.name, type: file.type, size: file.size }));
-        const uploadInfo = await ownerSvc.getUploadUrls(hotelId, filesMeta);
-        if (!uploadInfo || !Array.isArray(uploadInfo.urls) || uploadInfo.urls.length < newPhotos.length) {
-          throw new Error("Unable to prepare photo upload.");
-        }
+        const hasPrimary = existingPhotoUrls.some((p) => p.isPrimary);
         for (let i = 0; i < newPhotos.length; i += 1) {
-          const file = newPhotos[i];
-          const info = uploadInfo.urls[i];
-          const response = await fetch(info.uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
-          if (!response.ok) {
-            throw new Error(`Failed uploading photo: ${file.name}`);
-          }
-          photoUrls.push(info.publicUrl || info.url || info.filename);
+          const isPrimary = !hasPrimary && i === 0;
+          await ownerSvc.uploadHotelPhoto(hotelId, newPhotos[i], { isPrimary });
         }
       }
 
@@ -146,7 +156,6 @@ export default function OwnerHotelInfo() {
         address: form.address.trim(),
         phoneNumber: form.phoneNumber.trim(),
         description: form.description.trim(),
-        photos: photoUrls,
       };
       const updated = await ownerSvc.updateHotelProfile(hotelId, payload);
       setForm({
@@ -157,6 +166,7 @@ export default function OwnerHotelInfo() {
         description: String(updated?.description || ""),
       });
       setExistingPhotoUrls(Array.isArray(updated?.photos) ? updated.photos : []);
+      setStars(Number(updated?.starRating) || 0);
       newPhotoPreviews.forEach((url) => {
         try {
           URL.revokeObjectURL(url);
@@ -179,7 +189,7 @@ export default function OwnerHotelInfo() {
               address: updated?.address || null,
               phoneNumber: updated?.phoneNumber || null,
               description: updated?.description || null,
-              photos: Array.isArray(updated?.photos) ? updated.photos : [],
+              photos: Array.isArray(updated?.photos) ? updated.photos.map((p) => p.url) : [],
               cardPhoto: updated?.cardPhoto || null,
             },
           })
@@ -211,6 +221,13 @@ export default function OwnerHotelInfo() {
       {error && <div className="od-error" style={{ color: "#9b1c1c", padding: 10, borderRadius: 6, background: "#fff1f0", marginBottom: 12 }}>Error: {error}</div>}
       {success && <div style={{ color: "#166534", padding: 10, borderRadius: 6, background: "#f0fdf4", marginBottom: 12 }}>{success}</div>}
 
+      {!loading && !hotelId && (
+        <div className="muted" style={{ padding: 10 }}>
+          You don't have an approved hotel yet. Once an admin approves your hotel request, it will appear here.
+        </div>
+      )}
+
+      {hotelId && (
       <section className="od-row">
         <form onSubmit={handleSave}>
           <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
@@ -245,6 +262,18 @@ export default function OwnerHotelInfo() {
             </label>
 
             <label>
+              {/* CHANGED BY AI (2026-07-13): please review — read-only star rating, matching the
+                  City/Address pattern. Stars can't be edited here; changing them requires an
+                  approved Hotel Request (see Hotel Requests page). */}
+              <div className="small muted" style={{ marginBottom: 4 }}>Star Rating <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>(cannot be changed here — submit a Hotel Request)</span></div>
+              <div
+                style={{ width: "100%", padding: "10px 12px", border: "1px solid #e2e8f0", borderRadius: 8, background: "#f8fafc", color: "#f59e0b", letterSpacing: 2 }}
+              >
+                {stars > 0 ? `${'★'.repeat(stars)}${'☆'.repeat(5 - stars)}` : <span style={{ color: '#94a3b8', letterSpacing: 0 }}>Not set</span>}
+              </div>
+            </label>
+
+            <label>
               <div className="small muted" style={{ marginBottom: 4 }}>Phone Number</div>
               <input
                 value={form.phoneNumber}
@@ -271,10 +300,10 @@ export default function OwnerHotelInfo() {
               </div>
               <input type="file" accept="image/*" multiple onChange={handlePhotoChange} />
               <div className="room-photo-preview-list">
-                {existingPhotoUrls.map((url, index) => (
-                  <div key={`existing-photo-${index}`} className="room-photo-preview-item">
-                    <img src={url} alt={`Hotel ${index + 1}`} />
-                    {index === 0 && (
+                {existingPhotoUrls.map((photo, index) => (
+                  <div key={photo.id} className="room-photo-preview-item">
+                    <img src={photo.url} alt={`Hotel ${index + 1}`} />
+                    {photo.isPrimary && (
                       <span
                         className="small"
                         style={{
@@ -328,6 +357,7 @@ export default function OwnerHotelInfo() {
           </div>
         </form>
       </section>
+      )}
     </div>
   );
 }

@@ -21,10 +21,11 @@ export default function Login() {
       const { signInUser } = await import("./services/auth");
       const res = await signInUser({ email: form.email.trim(), password: form.password });
       // store token/user for testing
+      let next = null;
       try {
         const existingRaw = localStorage.getItem('mock_auth_user');
         const existing = existingRaw ? JSON.parse(existingRaw) : {};
-        const next = {
+        next = {
           ...res,
           user: {
             ...(existing?.user || {}),
@@ -35,7 +36,22 @@ export default function Login() {
         };
         localStorage.setItem('mock_auth_user', JSON.stringify(next));
       } catch (e) {}
-      if (res?.user?.role === 'hotel_owner') {
+
+      // The login response doesn't say which hotel an owner runs, so look it up now that
+      // we're authenticated (the token above must already be stored for this call to work).
+      if (next?.user?.role === 'hotel_owner') {
+        try {
+          const { getMyHotels } = await import("./services/hotels");
+          const myHotels = await getMyHotels();
+          const ownedHotel = myHotels[0];
+          if (ownedHotel) {
+            next = { ...next, user: { ...next.user, hotelId: ownedHotel.hotelId, hotelName: ownedHotel.hotelName } };
+            localStorage.setItem('mock_auth_user', JSON.stringify(next));
+          }
+        } catch (e) { /* owner may not have an approved hotel yet */ }
+      }
+
+      if (next?.user?.role === 'hotel_owner') {
         navigate('/ownerhome');
       } else {
         navigate('/');

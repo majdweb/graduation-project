@@ -107,12 +107,33 @@ function ReviewModal({ booking, userId, onClose, onSubmitted }) {
   );
 }
 
+// CHANGED BY AI (2026-07-13): please review — removed the old "pending bookings are always free
+// to cancel" special case, since the real backend (BookingService.CancelAsync) doesn't special-
+// case Pending at all; it applies the same hotel policy regardless of status. This now matches
+// exactly what the backend actually charges.
 function isCancellationFree(booking) {
-  if (booking.status === 'pending') return true;
   const policy = booking.cancelPolicy || { freeCancel: true, daysBefore: 2 };
   if (!policy.freeCancel) return false;
   const daysUntilCheckIn = Math.floor((new Date(booking.checkIn) - new Date()) / (1000 * 60 * 60 * 24));
   return daysUntilCheckIn >= Number(policy.daysBefore || 0);
+}
+
+// Mirrors BookingService.ComputeCancellationPenalty, for showing the guest the real fee before
+// they confirm cancelling.
+function computeCancellationPenalty(booking) {
+  if (isCancellationFree(booking)) return 0;
+  const policy = booking.cancelPolicy || { feeType: 'percentage', feeValue: 0 };
+  const total = Number(booking.totalAmount) || 0;
+  const fee = policy.feeType === 'flat' ? policy.feeValue : total * (Number(policy.feeValue) / 100);
+  return Math.min(Math.round(fee * 100) / 100, total);
+}
+
+// Mirrors BookingService.ModifyDatesAsync's late-modification fee, for warning the guest before
+// they submit a date change within 24 hours of check-in.
+function computeModificationFee(booking) {
+  const hoursUntilCheckIn = (new Date(booking.checkIn) - new Date()) / (1000 * 60 * 60);
+  if (hoursUntilCheckIn >= 24) return 0;
+  return booking.totalNights <= 1 ? (Number(booking.totalAmount) || 0) : (Number(booking.pricePerNight) || 0);
 }
 
 export default function MyBookings() {
@@ -152,9 +173,10 @@ export default function MyBookings() {
 
   const handleCancel = async (booking) => {
     const free = isCancellationFree(booking);
+    const penalty = free ? 0 : computeCancellationPenalty(booking);
     const message = free
       ? `Cancel your booking for ${booking.roomName} at ${booking.hotelName}? This cancellation is free.`
-      : `Cancel your booking for ${booking.roomName} at ${booking.hotelName}? This is a late cancellation and may not be refundable per the hotel's policy. Cancel anyway?`;
+      : `Cancel your booking for ${booking.roomName} at ${booking.hotelName}? Per this hotel's cancellation policy, you'll be charged a $${penalty.toFixed(2)} fee. Cancel anyway?`;
     if (!window.confirm(message)) return;
     try {
       await cancelBooking(booking.id, user.id);
@@ -176,11 +198,27 @@ export default function MyBookings() {
     setModifyError('');
     if (!modifyDates.checkIn || !modifyDates.checkOut) { setModifyError('Please select both dates.'); return; }
     if (modifyDates.checkIn >= modifyDates.checkOut) { setModifyError('Check-out must be after check-in.'); return; }
+    const lateFee = computeModificationFee(booking);
+    if (lateFee > 0 && !window.confirm(`This is within 24 hours of check-in, so a $${lateFee.toFixed(2)} late-modification fee applies. Continue?`)) {
+      return;
+    }
     setModifySaving(true);
     try {
       const updated = await updateBooking(booking.id, user.id, modifyDates.checkIn, modifyDates.checkOut);
-      setBookings((prev) => prev.map((b) => (b.id === booking.id ? { ...b, checkIn: updated.checkIn, checkOut: updated.checkOut, status: updated.status } : b)));
+      setBookings((prev) => prev.map((b) => (b.id === booking.id ? {
+        ...b,
+        checkIn: updated.checkIn,
+        checkOut: updated.checkOut,
+        status: updated.status,
+        totalAmount: updated.totalAmount,
+        modificationFee: updated.modificationFee,
+      } : b)));
       closeModify();
+      if (updated.modificationFee) {
+        alert(`Dates updated. A $${Number(updated.modificationFee).toFixed(2)} late-modification fee was applied.${updated.status === 'pending' ? ' This booking now needs the hotel to re-confirm it.' : ''}`);
+      } else if (updated.status === 'pending' && booking.status === 'confirmed') {
+        alert('Dates updated. This booking now needs the hotel to re-confirm it.');
+      }
     } catch (err) {
       setModifyError(err.message || 'Unable to modify this booking.');
     } finally {
@@ -215,6 +253,11 @@ export default function MyBookings() {
               </div>
               <div className="booking-row-dates">{b.checkIn} → {b.checkOut}</div>
               <span className={`booking-status booking-status-${b.status}`}>{b.status}</span>
+              {b.modificationFee ? (
+                <span className="muted small" title="A late-modification fee was charged when these dates were last changed.">
+                  (${Number(b.modificationFee).toFixed(2)} late fee applied)
+                </span>
+              ) : null}
 
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 {(b.status === 'pending' || b.status === 'confirmed') && (
@@ -236,6 +279,11 @@ export default function MyBookings() {
               {modifyingId === b.id && (
                 <div style={{ width: '100%', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 8, padding: '16px', marginTop: 4 }}>
                   <p style={{ margin: '0 0 12px', fontWeight: 600 }}>Change dates</p>
+                  {computeModificationFee(b) > 0 && (
+                    <p style={{ margin: '0 0 12px', fontSize: 13, color: '#9b1c1c' }}>
+                      ⚠ This is within 24 hours of check-in — modifying will charge a ${computeModificationFee(b).toFixed(2)} late fee.
+                    </p>
+                  )}
                   <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                     <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13 }}>
                       Check-in

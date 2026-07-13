@@ -7,16 +7,44 @@ async function _req(path, options = {}) {
   });
   let data = null;
   try { data = await res.json(); } catch { data = null; }
-  if (!res.ok) throw new Error(data?.message || `Request failed: ${res.status}`);
+  if (!res.ok) throw new Error(data?.error || data?.message || `Request failed: ${res.status}`);
   return data;
 }
 
+// The backend uses "Owner"/"Guest"/"Admin"; the rest of this app was built around
+// "hotel_owner"/"guest"/"admin", so requests/responses are translated at this boundary.
+const ROLE_TO_FRONTEND = { Owner: "hotel_owner", Guest: "guest", Admin: "admin" };
+const ROLE_TO_BACKEND = { hotel_owner: "owner", guest: "guest" };
+
+function normalizeAuthResponse(res) {
+  if (!res) return res;
+  return {
+    accessToken: res.accessToken,
+    refreshToken: res.refreshToken,
+    accessTokenExpiry: res.accessTokenExpiry,
+    user: {
+      id: res.userId,
+      username: res.username,
+      email: res.email,
+      role: ROLE_TO_FRONTEND[res.role] || res.role,
+    },
+  };
+}
+
 export async function signUpUser(payload) {
-  return _req('/api/auth/signup', { method: 'POST', body: JSON.stringify(payload) });
+  const backendPayload = {
+    username: payload.username,
+    email: payload.email,
+    password: payload.password,
+    role: ROLE_TO_BACKEND[payload.role] || "guest",
+  };
+  const res = await _req('/api/v1/auth/register', { method: 'POST', body: JSON.stringify(backendPayload) });
+  return normalizeAuthResponse(res);
 }
 
 export async function signInUser(payload) {
-  return _req('/api/auth/login', { method: 'POST', body: JSON.stringify(payload) });
+  const res = await _req('/api/v1/auth/login', { method: 'POST', body: JSON.stringify(payload) });
+  return normalizeAuthResponse(res);
 }
 
 export async function verifySignUpCode({ email, code }) {
@@ -61,6 +89,42 @@ export async function verifySignUpCode({ email, code }) {
   }
 
   return data;
+}
+
+// Reads the access token from the locally-stored session, for authenticated requests.
+export function getAuthToken() {
+  try {
+    const raw = localStorage.getItem("mock_auth_user");
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed?.accessToken || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+// CHANGED: added for the new shared API client's automatic token-refresh (see
+// services/apiClient.js). Access tokens expire after 60 minutes; this lets a request that gets
+// a 401 fetch a fresh token pair using the (longer-lived) refresh token, without forcing the
+// user to log in again.
+export function getRefreshToken() {
+  try {
+    const raw = localStorage.getItem("mock_auth_user");
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed?.refreshToken || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+// CHANGED: added alongside getRefreshToken() above — patches in a freshly-refreshed token pair
+// without disturbing the rest of the stored session (e.g. the user object).
+export function updateStoredTokens({ accessToken, refreshToken, accessTokenExpiry }) {
+  try {
+    const raw = localStorage.getItem("mock_auth_user");
+    const parsed = raw ? JSON.parse(raw) : {};
+    const next = { ...parsed, accessToken, refreshToken, accessTokenExpiry };
+    localStorage.setItem("mock_auth_user", JSON.stringify(next));
+  } catch (error) { /* ignore */ }
 }
 
 // Reads the locally-stored session set by signInUser/Login.js.

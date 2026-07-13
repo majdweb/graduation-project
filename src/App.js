@@ -22,6 +22,7 @@ import AllCities from "./AllCities";
 import AdminDashboard from "./AdminDashboard";
 import ScrollToTop from "./ScrollToTop";
 import Navbar from "./Navbar";
+import NotificationBell from "./NotificationBell";
 
 const PUBLIC_NAV = new Set([
   '/', '/home', '/hotels', '/rooms', '/search', '/my-bookings',
@@ -39,14 +40,21 @@ function AdminRoute({ children }) {
   return children;
 }
 
+// CHANGED BY AI (2026-07-13): please review — pages that render their own inline bell next to a
+// profile icon (Navbar.js's pages, plus OwnerHome's own inline navbar). The floating fallback
+// bell is suppressed on these so there's never a duplicate.
+const HAS_OWN_INLINE_BELL = new Set(['/ownerhome']);
+
 export default function App() {
   const location = useLocation();
   const isHome = location.pathname === '/' || location.pathname === '/home';
   const showNavbar = PUBLIC_NAV.has(location.pathname);
+  const hasOwnBell = showNavbar || HAS_OWN_INLINE_BELL.has(location.pathname);
 
   return (
     <>
       <ScrollToTop />
+      {!hasOwnBell && <NotificationBell />}
       {showNavbar && <Navbar transparent={isHome} />}
       <div key={location.pathname} className="page-enter">
         <Routes>

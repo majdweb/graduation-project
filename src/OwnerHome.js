@@ -3,6 +3,7 @@ import heroImage from './assets/homepage_slider.webp';
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { getCurrentUser, clearAuth } from './services/auth';
+import NotificationBell from './NotificationBell';
 
 const QUICK_ACTIONS = [
   {
@@ -91,6 +92,9 @@ export default function OwnerHome() {
           ))}
         </ul>
         <div className="owner-profile-slot">
+          {/* CHANGED BY AI (2026-07-13): please review — same placement as Navbar.js, inline
+              and left of the profile icon. */}
+          <NotificationBell inline />
           <div className="owner-profile-menu" tabIndex={0}>
             <button className="owner-profile-trigger" type="button" aria-label="Owner profile">
               <span className="owner-profile-icon">👤</span>

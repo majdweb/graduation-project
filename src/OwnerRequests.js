@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './ownerDashboard.css';
-import { addRequest, getRequests, subscribeRequests, REQUEST_FIELDS } from './data/hotelRequests';
+import { submitHotelRequest, getMyHotelRequests, REQUEST_FIELDS } from './services/hotelRequests';
 import { fileToResizedDataUrl } from './data/imageUtil';
 import { getCurrentUser } from './services/auth';
 
@@ -41,7 +41,7 @@ export default function OwnerRequests() {
     return {
       ownerName: user.username || 'Owner',
       ownerEmail: user.email || '',
-      hotelId: String(user.hotelId || user.hotelName || user.id || ''),
+      hotelId: user.hotelId || null,
       hotelName: user.hotelName || '',
       city: user.city || '',
       address: user.address || '',
@@ -57,9 +57,17 @@ export default function OwnerRequests() {
   const [doc, setDoc] = useState(null); // { name, dataUrl }
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [allRequests, setAllRequests] = useState(() => getRequests());
+  const [submitting, setSubmitting] = useState(false);
+  const [myRequests, setMyRequests] = useState([]);
+  const [loadError, setLoadError] = useState('');
 
-  useEffect(() => subscribeRequests(setAllRequests), []);
+  function loadRequests() {
+    return getMyHotelRequests()
+      .then(setMyRequests)
+      .catch((err) => setLoadError(err.message || 'Unable to load your requests.'));
+  }
+
+  useEffect(() => { loadRequests(); }, []);
 
   // Prefill edit form with the owner's current hotel info
   useEffect(() => {
@@ -74,18 +82,6 @@ export default function OwnerRequests() {
     setError('');
     setSuccess('');
   }, [type, owner]);
-
-  const myRequests = useMemo(
-    () =>
-      allRequests
-        .filter(
-          (r) =>
-            (identity.ownerEmail && r.ownerEmail === identity.ownerEmail) ||
-            (owner.hotelId && String(r.hotelId) === String(owner.hotelId))
-        )
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
-    [allRequests, identity, owner]
-  );
 
   function updateField(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -110,7 +106,7 @@ export default function OwnerRequests() {
     e.target.value = '';
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     if (!doc) {
@@ -121,20 +117,22 @@ export default function OwnerRequests() {
       setError('Please enter your name.');
       return;
     }
+    if (type === 'edit' && !owner.hotelId) {
+      setError("You don't have an approved hotel to edit yet.");
+      return;
+    }
+    setSubmitting(true);
     try {
-      addRequest({
+      await submitHotelRequest({
         type,
-        hotelId: type === 'edit' ? owner.hotelId : '',
-        ownerName: identity.ownerName.trim(),
-        ownerEmail: identity.ownerEmail.trim(),
-        changes: {
-          address: form.address.trim(),
-          stars: form.stars || undefined,
-        },
+        hotelId: type === 'edit' ? owner.hotelId : null,
+        address: form.address.trim(),
+        stars: form.stars || null,
         document: doc,
       });
     } catch (err) {
       setError(err.message || 'Could not submit the request.');
+      setSubmitting(false);
       return;
     }
     setDoc(null);
@@ -143,6 +141,8 @@ export default function OwnerRequests() {
         ? 'New hotel request submitted. The admin will review it.'
         : 'Edit request submitted. The admin will review it.'
     );
+    setSubmitting(false);
+    await loadRequests();
   }
 
   return (
@@ -216,14 +216,17 @@ export default function OwnerRequests() {
           </div>
 
           <div style={{ marginTop: 14 }}>
-            <button className="save-btn" type="submit">Submit request</button>
+            <button className="save-btn" type="submit" disabled={submitting}>
+              {submitting ? 'Submitting...' : 'Submit request'}
+            </button>
           </div>
         </form>
       </section>
 
       <section className="od-row" style={{ marginTop: 18 }}>
         <h2 style={{ marginTop: 0 }}>My requests</h2>
-        {myRequests.length === 0 && <p className="muted small">You haven't submitted any requests yet.</p>}
+        {loadError && <p className="muted small" style={{ color: '#e05555' }}>{loadError}</p>}
+        {myRequests.length === 0 && !loadError && <p className="muted small">You haven't submitted any requests yet.</p>}
         <div className="orq-list">
           {myRequests.map((r) => (
             <div key={r.id} className="orq-card">

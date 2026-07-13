@@ -3,16 +3,16 @@ import "./reservation.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import * as ownerSvc from "./services/owner";
 import { getCurrentUser } from "./services/auth";
-import { getRoomReviews } from "./services/guest";
+import { getRoomReviews, createBooking, initiatePayment, confirmPayment } from "./services/guest";
 
 const CAT_LABELS = { staff: 'Staff', location: 'Location', facilities: 'Facilities', cleanliness: 'Cleanliness', comfort: 'Comfort', value: 'Value' };
 
-function ReviewSnippet({ roomId }) {
+function ReviewSnippet({ hotelId, roomId }) {
   const [data, setData] = useState(null);
   useEffect(() => {
-    if (!roomId) return;
-    getRoomReviews(roomId).then(setData).catch(() => {});
-  }, [roomId]);
+    if (!roomId || !hotelId) return;
+    getRoomReviews(hotelId, roomId).then(setData).catch(() => {});
+  }, [hotelId, roomId]);
   if (!data || data.reviewCount === 0) return null;
   return (
     <div className="section-card" style={{ marginBottom: 16 }}>
@@ -50,6 +50,7 @@ export default function Reservation() {
   const navigate = useNavigate();
   const incoming = location.state || {};
   const room = incoming.room;
+  const currentUser = getCurrentUser();
 
   const [customer, setCustomer] = useState({
     name: "",
@@ -116,21 +117,33 @@ export default function Reservation() {
       setError("Check-out date must be after check-in date.");
       return;
     }
+    if (!payment.method) {
+      setError("Please select a payment method.");
+      return;
+    }
 
     setSubmitting(true);
     try {
-      const reservation = await ownerSvc.createReservation(room.hotelId, {
-        roomId: room.id,
-        userId: getCurrentUser()?.id || null,
-        guestName: customer.name,
-        guestEmail: customer.email,
-        guestPhone: customer.phone,
-        guests: customer.guests,
+      const booking = await createBooking({
+        hotelId: room.hotelId,
+        roomTypeId: room.id,
         checkIn: dates.checkIn,
         checkOut: dates.checkOut,
-        breakfast,
+        specialRequests: breakfast ? "Breakfast add-on requested" : null,
+        guestName: customer.name,
+        guestCount: customer.guests,
+        includeBreakfast: breakfast,
       });
-      setConfirmation({ status: reservation.status });
+
+      // "Pay on arrival" leaves the booking Pending; card/PayPal confirm it immediately. The
+      // backend doesn't validate real payment details, so card fields aren't sent anywhere.
+      let status = "pending";
+      if (payment.method !== "cash") {
+        const paymentRecord = await initiatePayment(booking.id, payment.method);
+        await confirmPayment(paymentRecord.id, `DEMO-${Date.now()}-${booking.id}`);
+        status = "confirmed";
+      }
+      setConfirmation({ status });
     } catch (err) {
       setError(err.message || "Unable to complete booking. Please try again.");
     } finally {
@@ -188,7 +201,15 @@ export default function Reservation() {
         )}
       </div>
 
-      {room && (
+      {room && !currentUser && (
+        <div className="section-card">
+          <h2 className="section-title">Please log in to book</h2>
+          <p>You need an account to complete a booking.</p>
+          <Link to="/login" className="back-btn">Log in</Link>
+        </div>
+      )}
+
+      {room && currentUser && (
         <form onSubmit={handleSubmit}>
           {/* CUSTOMER INFO */}
           <div className="section-card">
@@ -343,7 +364,7 @@ export default function Reservation() {
         </form>
       )}
 
-      {room && <ReviewSnippet roomId={room.id} />}
+      {room && <ReviewSnippet hotelId={room.hotelId} roomId={room.id} />}
     </div>
   );
 }

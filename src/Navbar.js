@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { getCurrentRole, getCurrentUser, clearAuth } from './services/auth';
+import NotificationBell from './NotificationBell';
 
 const NAV_LINKS = [
   { label: 'Home',                     href: '/' },
@@ -60,11 +61,17 @@ export default function Navbar({ transparent = false }) {
       <div className="auth-buttons">
         {isAdmin ? (
           <>
+            {/* CHANGED BY AI (2026-07-13): please review — moved from a fixed floating widget to
+                sit inline, left of the account controls. */}
+            <NotificationBell inline />
             <Link className="btn login" to="/admin">Admin Dashboard</Link>
             <button type="button" className="btn signup" onClick={handleSignOut}>Sign Out</button>
           </>
         ) : isGuest ? (
           <div className="owner-profile-slot">
+            {/* CHANGED BY AI (2026-07-13): please review — moved from a fixed floating widget to
+                sit left of the profile icon. */}
+            <NotificationBell inline />
             <div className="owner-profile-menu" tabIndex={0}>
               <button className="owner-profile-trigger" type="button" aria-label="Account profile">
                 <span className="owner-profile-icon">👤</span>

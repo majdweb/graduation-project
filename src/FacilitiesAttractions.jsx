@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
-import { useSiteContent, STORAGE_KEY } from "./useSiteContent";
+import { useEffect, useMemo, useState } from "react";
 import { getCurrentRole } from "./services/auth";
+import { getTrips, createTrip, updateTrip, deleteTrip } from "./services/trips";
 import "./FacilitiesAttractions.css";
 import "./room.css";
 
@@ -32,20 +32,7 @@ const emptyTrip = {
   description: "",
 };
 
-function persistTrips(nextTrips) {
-  let current = {};
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    current = stored ? JSON.parse(stored) : {};
-  } catch (error) {
-    current = {};
-  }
-  const next = { ...current, trips: nextTrips };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  window.dispatchEvent(new Event("velvetContentUpdated"));
-}
-
-function TripFormModal({ initialTrip, onSave, onCancel }) {
+function TripFormModal({ initialTrip, onSave, onCancel, saving }) {
   const [form, setForm] = useState(initialTrip || emptyTrip);
   const isEditing = Boolean(initialTrip);
 
@@ -147,10 +134,10 @@ function TripFormModal({ initialTrip, onSave, onCancel }) {
           </label>
 
           <div className="trip-form-actions">
-            <button type="submit" className="trip-form-save">
-              {isEditing ? "Save changes" : "Add trip"}
+            <button type="submit" className="trip-form-save" disabled={saving}>
+              {saving ? "Saving..." : isEditing ? "Save changes" : "Add trip"}
             </button>
-            <button type="button" className="trip-form-cancel" onClick={onCancel}>
+            <button type="button" className="trip-form-cancel" onClick={onCancel} disabled={saving}>
               Cancel
             </button>
           </div>
@@ -161,13 +148,25 @@ function TripFormModal({ initialTrip, onSave, onCancel }) {
 }
 
 export default function FacilitiesAttractions() {
-  const content = useSiteContent();
-  const trips = useMemo(() => content.trips || [], [content.trips]);
   const isAdmin = useMemo(() => getCurrentRole() === "admin", []);
+
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const [manageMode, setManageMode] = useState(false);
   const [editingTrip, setEditingTrip] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    getTrips()
+      .then((data) => { if (mounted) setTrips(data); })
+      .catch((err) => { if (mounted) setError(err.message || 'Unable to load trips.'); })
+      .finally(() => { if (mounted) setLoading(false); });
+    return () => { mounted = false; };
+  }, []);
 
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedDifficulties, setSelectedDifficulties] = useState([]);
@@ -199,20 +198,40 @@ export default function FacilitiesAttractions() {
     selectedDifficulties.length +
     (maxPrice < PRICE_MAX ? 1 : 0);
 
-  const handleAddTrip = (newTrip) => {
-    const maxId = trips.reduce((m, t) => Math.max(m, t.id), 0);
-    persistTrips([...trips, { ...newTrip, id: maxId + 1 }]);
-    setShowAddForm(false);
+  const handleAddTrip = async (newTrip) => {
+    setSaving(true);
+    try {
+      const created = await createTrip(newTrip);
+      setTrips((prev) => [...prev, created]);
+      setShowAddForm(false);
+    } catch (err) {
+      alert('Unable to add trip: ' + (err.message || err));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleEditTrip = (updatedTrip) => {
-    persistTrips(trips.map((t) => (t.id === editingTrip.id ? { ...updatedTrip, id: t.id } : t)));
-    setEditingTrip(null);
+  const handleEditTrip = async (updatedTrip) => {
+    setSaving(true);
+    try {
+      const saved = await updateTrip(editingTrip.id, updatedTrip);
+      setTrips((prev) => prev.map((t) => (t.id === editingTrip.id ? saved : t)));
+      setEditingTrip(null);
+    } catch (err) {
+      alert('Unable to save trip: ' + (err.message || err));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDeleteTrip = (tripId) => {
+  const handleDeleteTrip = async (tripId) => {
     if (!window.confirm("Delete this trip? This cannot be undone.")) return;
-    persistTrips(trips.filter((t) => t.id !== tripId));
+    try {
+      await deleteTrip(tripId);
+      setTrips((prev) => prev.filter((t) => t.id !== tripId));
+    } catch (err) {
+      alert('Unable to delete trip: ' + (err.message || err));
+    }
   };
 
   const pricePercent = ((maxPrice - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
@@ -251,6 +270,9 @@ export default function FacilitiesAttractions() {
             <p>{visibleTrips.length} trips available</p>
           </div>
 
+          {loading && <p className="muted">Loading trips...</p>}
+          {error && <p className="muted" style={{ color: '#9b1c1c' }}>{error}</p>}
+
           {manageMode && (
             <button type="button" className="add-trip-btn" onClick={() => setShowAddForm(true)}>
               + Add trip
@@ -258,7 +280,7 @@ export default function FacilitiesAttractions() {
           )}
 
           <div className="trips-grid">
-            {visibleTrips.map((trip, i) => (
+            {!loading && !error && visibleTrips.map((trip, i) => (
               <article className="trip-card" key={trip.id} style={{ animationDelay: `${i * 0.07}s` }}>
                 <div className="trip-card-top">
                   <span className="trip-type">{trip.type}</span>
@@ -290,7 +312,7 @@ export default function FacilitiesAttractions() {
             ))}
           </div>
 
-          {visibleTrips.length === 0 && (
+          {!loading && !error && visibleTrips.length === 0 && (
             <div className="empty-state">No trips match the selected filters.</div>
           )}
         </section>
@@ -354,13 +376,14 @@ export default function FacilitiesAttractions() {
       </main>
 
       {showAddForm && (
-        <TripFormModal onSave={handleAddTrip} onCancel={() => setShowAddForm(false)} />
+        <TripFormModal onSave={handleAddTrip} onCancel={() => setShowAddForm(false)} saving={saving} />
       )}
       {editingTrip && (
         <TripFormModal
           initialTrip={editingTrip}
           onSave={handleEditTrip}
           onCancel={() => setEditingTrip(null)}
+          saving={saving}
         />
       )}
     </div>
